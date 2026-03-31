@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.mapper.EmployeeMapper;
+import com.octopuz.platform.vo.EmployeeVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,5 +31,33 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         return this.getOne(employeeLambdaQueryWrapper);
 
 
+    }
+    @Override
+    public EmployeeVO convertToVO(Employee employee){
+        if(employee==null) return null;
+        return EmployeeVO.builder()
+                .id(employee.getId())
+                .empNo(employee.getEmpNo())
+                .name(employee.getName())
+                .department(employee.getDepartment())
+                .position(employee.getPosition())
+                .hireDate(employee.getHireDate())
+                .email(employee.getEmail())
+                .build();
+    }
+    @Override
+    public  List<EmployeeVO> convertToVOList(List<Employee> employees){
+        if(employees==null) return List.of();
+        return employees.stream().map(this::convertToVO).toList();
+    }
+    @Override
+    public Page<EmployeeVO> convertToVOPage(Page<Employee> page){
+        if(page==null) return null;
+        Page<EmployeeVO> employeeVOPage = new Page<>();
+        employeeVOPage.setCurrent(page.getCurrent());
+        employeeVOPage.setSize(page.getSize());
+        employeeVOPage.setTotal(page.getTotal());
+        employeeVOPage.setRecords(convertToVOList(page.getRecords()));
+        return employeeVOPage;
     }
 }

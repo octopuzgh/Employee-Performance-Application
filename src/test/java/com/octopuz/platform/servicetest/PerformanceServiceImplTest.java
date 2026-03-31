@@ -1,6 +1,7 @@
-package com.octopuz.platform.service;
+package com.octopuz.platform.servicetest;
 
 import com.octopuz.platform.entity.Performance;
+import com.octopuz.platform.service.PerformanceServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

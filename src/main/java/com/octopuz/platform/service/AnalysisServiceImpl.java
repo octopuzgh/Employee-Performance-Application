@@ -6,6 +6,8 @@ import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.mapper.PerformanceMapper;
+import com.octopuz.platform.vo.DepartmentRankVO;
+import com.octopuz.platform.vo.EmployeeTrendVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +26,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     @Autowired
     private EmployeeMapper employeeMapper ;
     @Override
-    public List<Map<String, Object>> getDepartmentRanK(Integer year, Integer quarter) {
+    public List<Map<String, Object>> getDepartmentRank(Integer year, Integer quarter) {
         //查询季度所有绩效
         LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Performance::getYear,year)
@@ -54,6 +56,11 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             result.add(departmentPerformanceMap);
         }
         result.sort((o1, o2) -> ((BigDecimal)o2.get("avgScore")).compareTo((BigDecimal)o1.get("avgScore")));
+        int rank = 1;
+        for (Map<String, Object> item : result){
+            item.put("rank",rank);
+            rank++;
+        }
         return result;
     }
 
@@ -101,6 +108,36 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 
     @Override
     public BigDecimal getCompanyAvgScore(Integer year, Integer quarter) {
-        return null;
+
+        LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Performance::getYear,year)
+                .eq(Performance::getQuarter,quarter);
+        return performanceMapper.selectList(queryWrapper).stream()
+                .map(Performance::getScore)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(new BigDecimal(performanceMapper.selectList(queryWrapper).size()),2,RoundingMode.HALF_UP);
+    }
+    //可不用
+    @Override
+    public List<DepartmentRankVO> getDepartmentRankVO(Integer year, Integer quarter){
+        return getDepartmentRank(year,quarter).stream()
+                .map(item -> DepartmentRankVO.builder()
+                        .department((String) item.get("department"))
+                        .avgScore((BigDecimal) item.get("avgScore"))
+                        .employeeCount((Integer) item.get("count"))
+                        .rank(item.get("rank") == null ? 0 : (Integer) item.get("rank"))
+                        .build())
+                .toList();
+    }
+    //可不用
+    @Override
+    public List<EmployeeTrendVO> getEmployeeTrendVO(String empNo){
+        return getEmployeeTrend(empNo).stream()
+                .map(item -> EmployeeTrendVO.builder()
+                        .year((Integer) item.get("year"))
+                        .quarter((Integer) item.get("quarter"))
+                        .score((BigDecimal) item.get("score"))
+                        .build())
+                .toList();
     }
 }

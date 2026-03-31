@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.mapper.PerformanceMapper;
+import com.octopuz.platform.vo.PerformanceVO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,4 +49,21 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
             return this.updateById(performance);
         }
     }
+    @Override
+    public PerformanceVO convertToVO(Performance performance){
+        if(performance==null) return null;
+        return PerformanceVO.builder()
+                .id(performance.getId())
+                .empNo(performance.getEmpNo())
+                .year(performance.getYear())
+                .quarter(performance.getQuarter())
+                .score(performance.getScore())
+                .build();
+    }
+    @Override
+    public List<PerformanceVO> convertToVOList(List<Performance> performances){
+        if(performances==null) return List.of();
+        return performances.stream().map(this::convertToVO).toList();
+    }
+
 }

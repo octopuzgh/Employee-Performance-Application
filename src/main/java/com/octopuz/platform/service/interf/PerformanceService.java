@@ -1,4 +1,4 @@
-package com.octopuz.platform.service;
+package com.octopuz.platform.service.interf;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.octopuz.platform.entity.Performance;

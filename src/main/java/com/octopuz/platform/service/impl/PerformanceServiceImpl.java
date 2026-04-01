@@ -1,9 +1,10 @@
-package com.octopuz.platform.service;
+package com.octopuz.platform.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.mapper.PerformanceMapper;
+import com.octopuz.platform.service.interf.PerformanceService;
 import com.octopuz.platform.vo.PerformanceVO;
 import org.springframework.stereotype.Service;
 

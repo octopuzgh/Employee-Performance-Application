@@ -1,4 +1,4 @@
-package com.octopuz.platform.service;
+package com.octopuz.platform.service.interf;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

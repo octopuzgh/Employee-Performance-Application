@@ -2,7 +2,7 @@ package com.octopuz.platform.controller;
 
 import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
-import com.octopuz.platform.service.AnalysisService;
+import com.octopuz.platform.service.interf.AnalysisService;
 import com.octopuz.platform.vo.DepartmentRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
 import jakarta.annotation.Resource;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analysis")

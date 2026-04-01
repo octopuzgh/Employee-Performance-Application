@@ -2,7 +2,7 @@ package com.octopuz.platform.servicetest;
 
 import com.octopuz.platform.entity.Employee;
 
-import com.octopuz.platform.service.EmployeeServiceImpl;
+import com.octopuz.platform.service.impl.EmployeeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

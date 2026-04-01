@@ -1,10 +1,11 @@
-package com.octopuz.platform.service;
+package com.octopuz.platform.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.mapper.EmployeeMapper;
+import com.octopuz.platform.service.interf.EmployeeService;
 import com.octopuz.platform.vo.EmployeeVO;
 import org.springframework.stereotype.Service;
 

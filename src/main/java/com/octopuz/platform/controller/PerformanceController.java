@@ -3,7 +3,7 @@ package com.octopuz.platform.controller;
 import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
 import com.octopuz.platform.entity.Performance;
-import com.octopuz.platform.service.PerformanceService;
+import com.octopuz.platform.service.interf.PerformanceService;
 import com.octopuz.platform.vo.PerformanceVO;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;

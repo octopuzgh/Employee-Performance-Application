@@ -3,6 +3,7 @@ package com.octopuz.platform.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.octopuz.platform.dto.EmployeeExcel;
 import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.service.interf.EmployeeService;
@@ -13,6 +14,8 @@ import java.util.List;
 
 @Service
 public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> implements EmployeeService {
+
+
     @Override
     public Page<Employee> pageEmployees(Integer pageNum, Integer pageSize){
         return this.page(new Page<>(pageNum, pageSize));
@@ -23,6 +26,13 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         LambdaQueryWrapper<Employee> employeeLambdaQueryWrapper = new LambdaQueryWrapper<>();
         employeeLambdaQueryWrapper.eq(Employee::getDepartment, department);
         return this.list(employeeLambdaQueryWrapper);
+
+    }
+    @Override
+    public Employee getByName(String name){
+        LambdaQueryWrapper<Employee> employeeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        employeeLambdaQueryWrapper.eq(Employee::getName, name);
+        return this.getOne(employeeLambdaQueryWrapper);
 
     }
     @Override
@@ -60,5 +70,17 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         employeeVOPage.setTotal(page.getTotal());
         employeeVOPage.setRecords(convertToVOList(page.getRecords()));
         return employeeVOPage;
+    }
+    @Override
+    public List<EmployeeExcel> convertTOExcelList(List<Employee>  employees){
+        if(employees==null) return List.of();
+        return employees.stream().map(employee -> EmployeeExcel.builder()
+                .empNo(employee.getEmpNo())
+                .name(employee.getName())
+                .department(employee.getDepartment())
+                .position(employee.getPosition())
+                .hireDate(employee.getHireDate())
+                .email(employee.getEmail())
+                .build()).toList();
     }
 }

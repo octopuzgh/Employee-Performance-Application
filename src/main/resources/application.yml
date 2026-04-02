@@ -1,9 +1,27 @@
 spring:
+  #mysql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://192.168.152.131:3306/employee_performance?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
     username: octopuz_remote
     password: Octopuz@123
+  #redis
+  data:
+    redis:
+      host: 192.168.152.131
+      port: 6379
+      username: octopuz_remote
+      password: Octopuz@123
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: 100ms
+          time-between-eviction-runs: 3000ms
+
 
 
   jdbc:

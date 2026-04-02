@@ -12,6 +12,7 @@ import com.octopuz.platform.service.interf.AnalysisService;
 import com.octopuz.platform.vo.DepartmentRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -84,7 +85,8 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //        }
 //        return result;
 //    }
-
+    @Cacheable(value = "analysis:dept-avg",
+                key = "#year+'-'+#quarter")
     @Override
     public BigDecimal getDepartmentAvgScore(Integer year, Integer quarter, String department) {
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
@@ -109,6 +111,8 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
         return avgScore.divide(new BigDecimal(performances.size()), 2, RoundingMode.HALF_UP);
     }
 
+    @Cacheable(value = "analysis:company-avg",
+                key = "#year+'-'+#quarter")
     @Override
     public BigDecimal getCompanyAvgScore(Integer year, Integer quarter) {
 
@@ -121,7 +125,10 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
                 .divide(new BigDecimal(performanceMapper.selectList(queryWrapper).size()), 2, RoundingMode.HALF_UP);
     }
 
-    //可不用
+
+
+    @Cacheable(value = "analysis:rank",
+            key = "#year+'-'+#quarter")
     @Override
     public List<DepartmentRankVO> getDepartmentRankVO(Integer year, Integer quarter) {
         return analysisMapper.getDepartmentRankVO(year, quarter);
@@ -136,7 +143,10 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //                        .build())
 //                .toList();
 //    }
-    //可不用
+
+
+    @Cacheable(value = "analysis:trend",
+            key = "#empNo")
     @Override
     public List<EmployeeTrendVO> getEmployeeTrendVO(String empNo) {
         List<EmployeeTrendVO> employeeTrendVO = analysisMapper.getEmployeeTrendVO(empNo);

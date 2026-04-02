@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.vo.DepartmentRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
-import com.octopuz.platform.vo.EmployeeVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -14,37 +13,37 @@ import java.util.List;
 @Mapper
 public interface AnalysisMapper extends BaseMapper<Performance> {
     @Select("""
-        select 
-            e.department,
-            avg(p.score) as avgScore,
-            count(distinct e.emp_no) as employeeCount,
-            rank() over (order by avg(p.score) desc) as rank
-        from performance p
-        join employee e on p.emp_no =e.emp_no
-        where p.year = #{year} and p.quarter =#{quarter}
-        group by e.department
-        order by avgScore desc
-    """)
+                select
+                    e.department,
+                    avg(p.score) as avgScore,
+                    count(distinct e.emp_no) as employeeCount,
+                    rank() over (order by avg(p.score) desc) as departRank
+                from performance p
+                join employee e on p.emp_no = e.emp_no
+                where p.year = #{year} and p.quarter = #{quarter}
+                group by e.department
+                order by avgScore desc
+            """)
     List<DepartmentRankVO> getDepartmentRankVO(
             @Param("year") Integer year,
             @Param("quarter") Integer quarter);
 
     @Select("""
-        select 
-            e.name,
-            p.emp_no,
-            p.year,
-            p.quarter,        
-            p.score,
-            ROUND(
-                (p.score - LAG(p.score, 1) OVER (ORDER BY p.year, p.quarter))/ LAG(p.score, 1) OVER (ORDER BY p.year, p.quarter) * 100,
-                2
-                ) as growthRate
-        from performance p
-        join employee e on p.emp_no =e.emp_no
-        where p.emp_no = #{empNo}
-        order by p.year,p.quarter
-    """)
+                select
+                    p.emp_no,
+                    e.name,
+                    p.year,
+                    p.quarter,
+                    p.score,
+                    ROUND(
+                        (p.score - LAG(p.score, 1) OVER (ORDER BY p.year, p.quarter))/ LAG(p.score, 1) OVER (ORDER BY p.year, p.quarter) * 100,
+                        2
+                        ) as growthRate
+                from performance p
+                join employee e on p.emp_no = e.emp_no
+                where p.emp_no = #{empNo}
+                order by p.year, p.quarter
+            """)
     List<EmployeeTrendVO> getEmployeeTrendVO(
             @Param("empNo") String empNo);
 

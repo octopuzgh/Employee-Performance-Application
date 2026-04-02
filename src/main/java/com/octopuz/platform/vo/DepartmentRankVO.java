@@ -19,5 +19,5 @@ public class DepartmentRankVO {
     //员工数量
     private Integer employeeCount;
     //排名
-    private Integer rank;
+    private Integer departmentRank;
 }

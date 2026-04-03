@@ -28,7 +28,7 @@ import java.util.List;
 public class PerformanceController {
     @Resource
     private PerformanceServiceImpl performanceService;
-    PerformanceExcelListener performanceExcelListener=new PerformanceExcelListener(performanceService);
+    PerformanceExcelListener performanceExcelListener=new PerformanceExcelListener();
 
     @PostMapping
     public Result<PerformanceVO> addOrUpdate(@RequestBody Performance performance) {
@@ -91,28 +91,11 @@ public class PerformanceController {
     @PostMapping("/import")
     public Result<Void> importExcel(@RequestParam("file") MultipartFile file) {
         try {
-            if (file.isEmpty()) {
-                return Result.error(ResultCode.BAD_REQUEST, "文件为空");
-            }
-            EasyExcel.read(file.getInputStream(), PerformanceExcel.class,performanceExcelListener)
-                    .sheet()
-                    .doRead();
-            if(!performanceExcelListener.getErrorList().isEmpty()){
-                return Result.error(ResultCode.BAD_REQUEST, "导入失败" + performanceExcelListener.getErrorList());
-            }
-            if(performanceExcelListener.getPerformances().isEmpty()){
-                return Result.error(ResultCode.BAD_REQUEST, "导入失败");
-            }
-            boolean saved = performanceExcelListener.savePerformances();
-            if(saved){
-                log.info("导入成功,共导入{}条",performanceExcelListener.getPerformances().size());
-                return Result.success();
-            }else {
-                return Result.error(ResultCode.ERROR, "导入失败");
-            }
+            String error = performanceService.importExcel(file);
+            return error == null ? Result.success() : Result.error(ResultCode.ERROR, error);
         } catch (Exception e) {
-            log.info("导入失败",e);
-            return Result.error(ResultCode.ERROR, "导入失败"+e.getMessage());
+            log.error("导入员工数据异常：{}", e.getMessage());
+            return Result.error(ResultCode.ERROR, "导入员工数据异常"+e.getMessage());
         }
     }
     @GetMapping("/export")

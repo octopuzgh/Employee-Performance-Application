@@ -1,19 +1,36 @@
 package com.octopuz.platform.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.dto.PerformanceExcel;
 import com.octopuz.platform.entity.Performance;
+import com.octopuz.platform.listener.PerformanceExcelListener;
 import com.octopuz.platform.mapper.PerformanceMapper;
 import com.octopuz.platform.service.interf.PerformanceService;
 import com.octopuz.platform.vo.PerformanceVO;
+import jakarta.annotation.Resource;
+import jakarta.el.ExpressionFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
+
 @Service
 
+@Slf4j
 public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Performance> implements PerformanceService {
+    @Resource
+    private RedissonClient redissonClient;
+    @Autowired
+    private EmployeeServiceImpl employeeServiceImpl;
+
     @Override
     public List<Performance> getByEmpNo(String empNo) {
         LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
@@ -41,11 +58,18 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
 
     @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
     @Override
+    public boolean updateById(Performance performance) {
+        return super.updateById(performance);
+    }
+
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    @Override
     public boolean removeById(Integer id) {
         return super.removeById(id);
     }
+
     @Override
-    @CacheEvict(value = {"analysis:rank","analysis:dept-avg","analysis:company-avg"}, allEntries = true)
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
 
     public boolean addOrUpdate(Performance performance) {
         LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
@@ -55,15 +79,16 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
         Performance one = this.getOne(queryWrapper);
         if (one == null) {
             return this.save(performance);
-        }else {
+        } else {
             performance.setId(one.getId());
             return this.updateById(performance);
         }
     }
+
     @Override
 
-    public PerformanceVO convertToVO(Performance performance){
-        if(performance==null) return null;
+    public PerformanceVO convertToVO(Performance performance) {
+        if (performance == null) return null;
         return PerformanceVO.builder()
                 .id(performance.getId())
                 .empNo(performance.getEmpNo())
@@ -72,21 +97,66 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
                 .score(performance.getScore())
                 .build();
     }
+
     @Override
-    public List<PerformanceVO> convertToVOList(List<Performance> performances){
-        if(performances==null) return List.of();
+    public List<PerformanceVO> convertToVOList(List<Performance> performances) {
+        if (performances == null) return List.of();
         return performances.stream().map(this::convertToVO).toList();
     }
+
     @Override
-    public List<PerformanceExcel> convertToExcelList(List<Performance> performances){
-        if(performances==null) return List.of();
+    public List<PerformanceExcel> convertToExcelList(List<Performance> performances) {
+        if (performances == null) return List.of();
         return performances.stream().map(performance -> PerformanceExcel.builder()
                 .empNo(performance.getEmpNo())
                 .year(performance.getYear())
                 .quarter(performance.getQuarter())
                 .score(performance.getScore())
                 .build()
-                ).toList();
+        ).toList();
+    }
+
+    @Override
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    public String importExcel(MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return "文件为空";
+            }
+            String lockKey = "import-excel-lock:performance" + UUID.randomUUID();
+            RLock lock = redissonClient.getLock(lockKey);
+            boolean isLocked = lock.tryLock();
+            if (!isLocked) {
+                return "请勿重复导入";
+            }
+            try {
+                PerformanceExcelListener performanceExcelListener = new PerformanceExcelListener(employeeServiceImpl);
+                EasyExcel.read(file.getInputStream(), PerformanceExcel.class, performanceExcelListener)
+                        .sheet()
+                        .doRead();
+                if (!performanceExcelListener.getErrorList().isEmpty()) {
+                    return "导入失败" + performanceExcelListener.getErrorList();
+                }
+                if (performanceExcelListener.getPerformances().isEmpty()) {
+                    return "导入失败";
+                }
+                boolean saved = this.saveBatch(performanceExcelListener.getPerformances(), performanceExcelListener.getPerformances().size());
+
+                if (saved) {
+                    log.info("导入成功,共导入{}条", performanceExcelListener.getPerformances().size());
+                    return null;
+                } else {
+                    return "导入失败";
+                }
+            } finally {
+                if(lock.isHeldByCurrentThread()){
+                    lock.unlock();
+                }
+            }
+        } catch (Exception e) {
+            log.info("导入失败", e);
+            return "导入失败" + e.getMessage();
+        }
     }
 
 }

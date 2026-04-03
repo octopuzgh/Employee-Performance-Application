@@ -8,7 +8,6 @@ import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
 import com.octopuz.platform.dto.EmployeeExcel;
 import com.octopuz.platform.entity.Employee;
-import com.octopuz.platform.listener.EmployeeExcelListener;
 import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.service.impl.EmployeeServiceImpl;
 import com.octopuz.platform.vo.EmployeeVO;
@@ -33,7 +32,6 @@ public class EmployeeController {
     @Resource
     private EmployeeMapper employeeMapper;
 
-    private EmployeeExcelListener excelListener = new EmployeeExcelListener(employeeService);
 
     @PostMapping
     public Result<EmployeeVO> add(@RequestBody Employee employee) {
@@ -129,32 +127,13 @@ public class EmployeeController {
     //导入员工数据
     @PostMapping("/import")
     public Result<Void> importExcel(@RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                return Result.error(ResultCode.BAD_REQUEST, "上传文件不能为空");
-            }
-            EasyExcel.read(file.getInputStream(), EmployeeExcel.class, excelListener)
-                    .sheet()
-                    .doRead();
-            //检查
-            if (!excelListener.getErrorList().isEmpty()) {
-                return Result.error(ResultCode.BAD_REQUEST, "导入员工数据异常，请检查数据格式是否正确，并查看错误信息" + excelListener.getErrorList());
-            }
-            if (excelListener.getEmployees().isEmpty()) {
-                return Result.error(ResultCode.BAD_REQUEST, "导入员工数据异常，请检查数据格式是否正确");
-            }
-            //保存
-            boolean saved = excelListener.saveEmployees();
-            if (!saved) {
-                return Result.error(ResultCode.ERROR, "导入员工数据异常，请检查数据格式是否正确");
-            } else {
-                log.info("导入员工数据成功,共导入{}条", excelListener.getEmployees().size());
-                return Result.success();
-            }
-        } catch (Exception e) {
-            log.error("导入员工数据异常：{}", e.getMessage());
-            return Result.error(ResultCode.ERROR, "导入员工数据异常" + e.getMessage());
-        }
+       try {
+           String error = employeeService.importExcel( file);
+           return error == null ? Result.success() : Result.error(ResultCode.ERROR, error);
+       } catch (Exception e) {
+           log.error("导入员工数据异常", e);
+           return Result.error(ResultCode.ERROR, "导入失败：" + e.getMessage());
+       }
     }
 
     @GetMapping("/export")
@@ -184,7 +163,7 @@ public class EmployeeController {
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setCharacterEncoding("utf-8");
             response.setHeader("Content-Disposition",
-                    "attachment;filename=" + URLEncoder.encode("员工列表模板.xlsx", StandardCharsets.UTF_8) + ".xlsx");
+                    "attachment;filename=" + URLEncoder.encode("员工列表模板", StandardCharsets.UTF_8) + ".xlsx");
             EasyExcel.write(response.getOutputStream(), EmployeeExcel.class)
                     .sheet("员工列表模板")
                     .doWrite(new ArrayList<EmployeeExcel>());

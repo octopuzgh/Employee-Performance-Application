@@ -1,20 +1,32 @@
 package com.octopuz.platform.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.dto.EmployeeExcel;
 import com.octopuz.platform.entity.Employee;
+import com.octopuz.platform.listener.EmployeeExcelListener;
 import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.service.interf.EmployeeService;
 import com.octopuz.platform.vo.EmployeeVO;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> implements EmployeeService {
-
+    @Resource
+    private RedissonClient redissonClient;
 
     @Override
     public Page<Employee> pageEmployees(Integer pageNum, Integer pageSize){
@@ -82,5 +94,51 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                 .hireDate(employee.getHireDate())
                 .email(employee.getEmail())
                 .build()).toList();
+    }
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    @Override
+    public String importExcel(MultipartFile file){
+        try {
+            if (file.isEmpty()) {
+                return  "上传文件不能为空";
+            }
+            //生成锁key,使用uuid利于处理高并发
+            String lockKey = "import-excel-lock:employee" + UUID.randomUUID();
+            RLock lock = redissonClient.getLock(lockKey);
+            boolean isLocked = lock.tryLock(0,-1, TimeUnit.SECONDS);
+            if(!isLocked){
+                return "请勿重复导入";
+            }
+
+
+            try {
+                EmployeeExcelListener excelListener = new EmployeeExcelListener();
+                EasyExcel.read(file.getInputStream(), EmployeeExcel.class, excelListener)
+                        .sheet()
+                        .doRead();
+                //检查
+                if (!excelListener.getErrorList().isEmpty()) {
+                    return  "导入员工数据异常，请检查数据格式是否正确，并查看错误信息" + excelListener.getErrorList();
+                }
+                if (excelListener.getEmployees().isEmpty()) {
+                    return  "导入员工数据异常，请检查数据格式是否正确";
+                }
+                //保存
+                boolean saved = this.saveBatch(excelListener.getEmployees());
+                if(!saved){
+                    return "导入员工数据异常，请检查数据格式是否正确";
+                } else {
+                    log.info("导入员工数据成功,共导入{}条", excelListener.getEmployees().size());
+                    return null;
+                }
+            } finally {
+                if(lock.isHeldByCurrentThread()){
+                    lock.unlock();
+                }
+            }
+        } catch (Exception e) {
+            log.error("导入员工数据异常：{}", e.getMessage());
+            return  "导入员工数据异常" + e.getMessage();
+        }
     }
 }

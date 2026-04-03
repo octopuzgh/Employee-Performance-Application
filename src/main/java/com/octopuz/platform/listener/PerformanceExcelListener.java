@@ -4,20 +4,24 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.octopuz.platform.dto.PerformanceExcel;
 import com.octopuz.platform.entity.Performance;
-import com.octopuz.platform.service.impl.PerformanceServiceImpl;
+import com.octopuz.platform.service.interf.EmployeeService;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
+@Component
 @Slf4j
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class PerformanceExcelListener extends AnalysisEventListener<PerformanceExcel> {
-    private final PerformanceServiceImpl performanceService;
+    @Resource
+    private EmployeeService employeeService;
     private final ArrayList<Performance> performances = new ArrayList<>();
     private final ArrayList<String> errorList = new ArrayList<>();
 
@@ -37,6 +41,11 @@ public class PerformanceExcelListener extends AnalysisEventListener<PerformanceE
                 errorList.add("第" + (context.readRowHolder().getRowIndex() + 1) + "行数据有误，请检查数据！（绩效必须在0-100之间）");
                 return;
             }
+            //校验员工是否存在
+            if (employeeService.getByEmpNo(data.getEmpNo()) == null) {
+                errorList.add("第" + (context.readRowHolder().getRowIndex() + 1) + "行数据有误，请检查数据！（员工不存在）");
+                return;
+            }
             Performance performance = Performance.builder()
                     .empNo(data.getEmpNo())
                     .year(data.getYear())
@@ -54,11 +63,5 @@ public class PerformanceExcelListener extends AnalysisEventListener<PerformanceE
     public void doAfterAllAnalysed(AnalysisContext context) {
         log.info("所有数据解析完毕，共解析{}条数据", performances.size());
     }
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    public boolean savePerformances() {
-        if (performances.isEmpty()) {
-            return false;
-        }
-        return performanceService.saveOrUpdateBatch(performances);
-    }
+
 }

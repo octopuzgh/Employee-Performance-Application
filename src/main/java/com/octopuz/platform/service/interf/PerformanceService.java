@@ -5,6 +5,7 @@ import com.octopuz.platform.dto.PerformanceExcel;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.vo.PerformanceVO;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ public interface PerformanceService extends IService<Performance> {
     //按年份和季度查绩效
     List<Performance> getByYearAndQuarter(Integer year, Integer quarter);
 
+
+
     boolean removeById(Integer id);
 
     //添加或修改绩效
@@ -25,4 +28,6 @@ public interface PerformanceService extends IService<Performance> {
     List<PerformanceVO> convertToVOList(List<Performance> performances);
 
     List<PerformanceExcel> convertToExcelList(List<Performance> performances);
+
+    String importExcel(MultipartFile file);
 }

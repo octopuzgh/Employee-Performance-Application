@@ -1,38 +1,43 @@
-package com.octopuz.platform.service.impl;
-import com.octopuz.platform.service.interf.PythonScriptService;
-import com.octopuz.platform.utils.SshExecutor;
+package com.octopuz.platform.utils;
+
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
-public class PythonScriptServiceImpl implements PythonScriptService {
+@Component
+public class PythonScriptExecutor {
 
     @Resource
     private SshExecutor sshExecutor;
 
     private static final String REMOTE_SCRIPT_BASE_PATH = "/mnt/hgfs/share_files/platform/scripts";
 
-    @Override
-    public String executeScript(String scriptPath) {
-        return executeScriptWithArgs(scriptPath);
+    /**
+     * 执行远程 Python 脚本
+     */
+    public String execute(String scriptPath) {
+        return executeWithArgs(scriptPath);
     }
 
-    @Override
-    public String executeScriptWithArgs(String scriptPath, String... args) {
+    /**
+     * 执行带参数的 Python 脚本
+     * @param scriptPath 脚本路径
+     * @param args 参数列表
+     * @return 脚本输出结果
+     */
+    public String executeWithArgs(String scriptPath, String... args) {
         String fullPath = REMOTE_SCRIPT_BASE_PATH + "/" + scriptPath;
-
-        // 构建命令：cd 到脚本目录并执行
         String command = buildCommand(fullPath, args);
-        log.info("执行远程 Python 脚本: {}", command);
+
+        log.debug("执行远程 Python 脚本: {}", command);
 
         try {
             String result = sshExecutor.execute(command);
-            log.info("脚本执行成功，返回结果长度: {}", result.length());
+            log.debug("脚本执行成功，返回长度: {}", result.length());
             return result;
         } catch (Exception e) {
             log.error("脚本执行失败: {}", e.getMessage(), e);
@@ -40,22 +45,15 @@ public class PythonScriptServiceImpl implements PythonScriptService {
         }
     }
 
-    /**
-     * 构建 SSH 执行命令
-     */
     private String buildCommand(String scriptPath, String... args) {
         StringBuilder command = new StringBuilder();
 
-        // 切换到脚本所在目录
         String scriptDir = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
         String scriptName = scriptPath.substring(scriptPath.lastIndexOf('/') + 1);
 
         command.append("cd ").append(scriptDir).append(" && ");
-
-        // 执行 Python 脚本
         command.append("python3 ").append(scriptName);
 
-        // 添加参数
         if (args != null && args.length > 0) {
             command.append(" ").append(Arrays.stream(args)
                     .map(arg -> "\"" + arg + "\"")
@@ -63,5 +61,24 @@ public class PythonScriptServiceImpl implements PythonScriptService {
         }
 
         return command.toString();
+    }
+
+    public String extractJson(String content) {
+        if (content == null || content.isEmpty()) {
+            throw new IllegalArgumentException("返回内容为空");
+        }
+
+        String trimmed = content.trim();
+
+        int jsonStart = trimmed.indexOf('[');
+        if (jsonStart < 0) {
+            jsonStart = trimmed.indexOf('{');
+        }
+
+        if (jsonStart < 0) {
+            throw new IllegalArgumentException("未找到有效的 JSON 内容");
+        }
+
+        return trimmed.substring(jsonStart);
     }
 }

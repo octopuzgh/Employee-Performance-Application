@@ -1,5 +1,6 @@
 package com.octopuz.platform.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.octopuz.platform.entity.Employee;
@@ -9,7 +10,10 @@ import com.octopuz.platform.mapper.AnalysisMapper;
 import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.mapper.PerformanceMapper;
 import com.octopuz.platform.service.interf.AnalysisService;
+import com.octopuz.platform.utils.PythonScriptExecutor;
 import com.octopuz.platform.vo.DepartmentRankVO;
+import com.octopuz.platform.vo.DepartmentStatsVO;
+import com.octopuz.platform.vo.EmployeeRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,6 +31,8 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     private EmployeeMapper employeeMapper;
     @Autowired
     private AnalysisMapper analysisMapper;
+    @Autowired
+    private PythonScriptExecutor pythonScriptExecutor;
 
 //    @Override
 
@@ -164,6 +170,38 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             }
         }
         return employeeTrendVO;
+    }
+
+    @Override
+    @Cacheable(value = "analysis:dept-stats")
+    public List<DepartmentStatsVO> getDepartmentStats() {
+        try {
+            String jsonResult = pythonScriptExecutor.execute("statistics/dept_stats.py");
+
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            return JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
+        } catch (Exception e) {
+            log.error("dept_stats.py脚本执行错误", e);
+            return null;
+        }
+    }
+
+    @Override
+    @Cacheable(value = "analysis:emp-rank")
+    public List<EmployeeRankVO> getEmployeeRank(Integer topN) {
+        try {
+            if(topN == null || topN <= 0){
+                topN = 10;
+            }
+            String jsonResult = pythonScriptExecutor.executeWithArgs("statistics/emp_rank.py", String.valueOf(topN));
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            return JSON.parseArray(cleanedJson, EmployeeRankVO.class);
+        } catch (Exception e) {
+            log.error("Python脚本执行错误", e);
+            return null;
+        }
     }
 //
 //        return getEmployeeTrend(empNo).stream()

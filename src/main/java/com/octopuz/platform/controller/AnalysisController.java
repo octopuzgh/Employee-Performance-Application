@@ -4,11 +4,15 @@ import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
 import com.octopuz.platform.service.interf.AnalysisService;
 import com.octopuz.platform.vo.DepartmentRankVO;
+import com.octopuz.platform.vo.DepartmentStatsVO;
+import com.octopuz.platform.vo.EmployeeRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -73,5 +77,26 @@ public class AnalysisController {
             return Result.error(ResultCode.ERROR, "查询失败"+e.getMessage());
         }
     }
+    @GetMapping("/departmentStats")
+    public Result<List<DepartmentStatsVO>> getDepartmentStats() {
+        log.info("开始查询部门统计...");
+        try {
+            List<DepartmentStatsVO> departmentStats = analysisService.getDepartmentStats();
+            return departmentStats.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有部门统计数据") : Result.success(departmentStats);
+        } catch (Exception e) {
+            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+        }
+    }
+    @GetMapping("/employeeRank")
+    public Result<List<EmployeeRankVO>> getEmployeeRank(@RequestParam(defaultValue = "10") Integer topN) {
+        log.info( "开始查询员工排名... topN = {}", topN);
+        try {
+            List<EmployeeRankVO> employeeRank = analysisService.getEmployeeRank(topN);
+            return employeeRank.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有员工排名数据") : Result.success(employeeRank);
+        } catch (Exception e) {
+            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+        }
+    }
+
 
 }

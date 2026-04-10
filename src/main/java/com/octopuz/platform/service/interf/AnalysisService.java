@@ -1,6 +1,8 @@
 package com.octopuz.platform.service.interf;
 
 import com.octopuz.platform.vo.DepartmentRankVO;
+import com.octopuz.platform.vo.DepartmentStatsVO;
+import com.octopuz.platform.vo.EmployeeRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
 
 import java.math.BigDecimal;
@@ -19,4 +21,8 @@ public interface AnalysisService{
     List<DepartmentRankVO> getDepartmentRankVO(Integer year, Integer quarter);
 
     List<EmployeeTrendVO> getEmployeeTrendVO(String empNo);
+
+    List<DepartmentStatsVO> getDepartmentStats();
+
+    List<EmployeeRankVO> getEmployeeRank(Integer topN);
 }

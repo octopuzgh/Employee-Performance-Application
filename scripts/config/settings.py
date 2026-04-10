@@ -10,7 +10,7 @@ MYSQL_CONFIG = {
 # Spark 配置
 SPARK_CONFIG = {
     "appName": "绩效统计API",
-    "master": "local[2]",
+    "master": "local[*]",
     "config": {
         "spark.sql.adaptive.enabled": "true",
         "spark.sql.adaptive.coalescePartitions.enabled": "true",

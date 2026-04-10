@@ -40,17 +40,41 @@ public class SshExecutor {
             channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(command);
 
-            // 3. 获取输出流
+            // 3. 分别获取标准输出和错误输出
             InputStream in = channel.getInputStream();
+            InputStream err = channel.getErrStream();
+
+            log.debug("SSH 执行命令: {}", command);
             channel.connect();
 
-            // 4. 读取结果
+            // 4. 读取标准输出
             StringBuilder result = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     result.append(line).append("\n");
                 }
+            }
+
+            // 5. 读取错误输出
+            StringBuilder errorOutput = new StringBuilder();
+            try (BufferedReader errReader = new BufferedReader(new InputStreamReader(err, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = errReader.readLine()) != null) {
+                    errorOutput.append(line).append("\n");
+                }
+            }
+
+            if (errorOutput.length() > 0) {
+                log.warn("SSH stderr 输出:\n{}", errorOutput.toString());
+            }
+
+            // 6. 检查退出状态
+            int exitStatus = channel.getExitStatus();
+            log.debug("SSH 退出状态: {}", exitStatus);
+
+            if (exitStatus != 0) {
+                log.error("Remote command failed with exit status: {}", exitStatus);
             }
 
             // 5. 检查退出状态

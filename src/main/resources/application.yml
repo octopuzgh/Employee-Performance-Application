@@ -40,6 +40,7 @@ spring:
 
 
 
+
   jdbc:
     template:
       max-rows: 1000
@@ -55,4 +56,13 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+ssh:
+  REMOTE_HOST: 192.168.152.131
+  REMOTE_PORT: 22
+  REMOTE_USER: octopuz_remote
+  PRIVATE_KEY_PATH: C:/Users/octopuz/.ssh/id_rsa
+  TIMEOUT: 10000
+
+
 

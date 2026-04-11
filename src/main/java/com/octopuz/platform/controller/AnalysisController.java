@@ -3,10 +3,7 @@ package com.octopuz.platform.controller;
 import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
 import com.octopuz.platform.service.interf.AnalysisService;
-import com.octopuz.platform.vo.DepartmentRankVO;
-import com.octopuz.platform.vo.DepartmentStatsVO;
-import com.octopuz.platform.vo.EmployeeRankVO;
-import com.octopuz.platform.vo.EmployeeTrendVO;
+import com.octopuz.platform.vo.*;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,26 +49,26 @@ public class AnalysisController {
     }
 
     @GetMapping("/departmentAvgScore")
-    public Result<BigDecimal> getDepartmentAvgScore(@RequestParam Integer year, @RequestParam Integer quarter, @RequestParam String department) {
+    public Result<DepartmentAvgScoreVO> getDepartmentAvgScore(@RequestParam Integer year, @RequestParam Integer quarter, @RequestParam String department) {
         log.info("开始查询部门平均分... year = {},quarter={},department={}", year, quarter, department);
         try {
             if (quarter < 1 || quarter > 4) {
                 return Result.error(ResultCode.BAD_REQUEST, "季度必须在1-4之间");
             }
-            BigDecimal departmentAvgScore = analysisService.getDepartmentAvgScore(year, quarter, department);
+            DepartmentAvgScoreVO departmentAvgScore = analysisService.getDepartmentAvgScore(year, quarter, department);
             return departmentAvgScore == null ? Result.error(ResultCode.NOT_FOUND, "没有该部门的绩效数据") : Result.success(departmentAvgScore);
         } catch (Exception e) {
             return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
         }
     }
     @GetMapping("/companyAvgScore")
-    public Result<BigDecimal> getCompanyAvgScore(@RequestParam Integer year, @RequestParam Integer quarter) {
+    public Result<CompanyAvgScoreVO> getCompanyAvgScore(@RequestParam Integer year, @RequestParam Integer quarter) {
         log.info("开始查询公司平均分... year = {},quarter={}", year, quarter);
         try{
             if(quarter < 1 || quarter > 4){
                 return Result.error(ResultCode.BAD_REQUEST, "季度必须在1-4之间");
             }
-            BigDecimal companyAvgScore = analysisService.getCompanyAvgScore(year, quarter);
+            CompanyAvgScoreVO companyAvgScore = analysisService.getCompanyAvgScore(year, quarter);
             return companyAvgScore == null ? Result.error(ResultCode.NOT_FOUND, "没有该公司的绩效数据") : Result.success(companyAvgScore);
         }catch (Exception e){
             return Result.error(ResultCode.ERROR, "查询失败"+e.getMessage());

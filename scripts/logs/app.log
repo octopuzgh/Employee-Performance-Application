@@ -18,3 +18,9 @@
 2026-04-11 16:36:20,097 - INFO - 执行统计任务: emp_trend
 2026-04-11 16:36:27,650 - INFO - 统计任务完成: emp_trend
 2026-04-11 16:36:27,651 - INFO - Closing down clientserver connection
+2026-04-11 17:10:34,783 - INFO - 执行统计任务: dept_avg
+2026-04-11 17:10:41,790 - INFO - 统计任务完成: dept_avg
+2026-04-11 17:10:41,791 - INFO - Closing down clientserver connection
+2026-04-11 17:11:46,545 - INFO - 执行统计任务: company_avg
+2026-04-11 17:11:53,122 - INFO - 统计任务完成: company_avg
+2026-04-11 17:11:53,123 - INFO - Closing down clientserver connection

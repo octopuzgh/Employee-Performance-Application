@@ -11,10 +11,7 @@ import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.mapper.PerformanceMapper;
 import com.octopuz.platform.service.interf.AnalysisService;
 import com.octopuz.platform.utils.PythonScriptExecutor;
-import com.octopuz.platform.vo.DepartmentRankVO;
-import com.octopuz.platform.vo.DepartmentStatsVO;
-import com.octopuz.platform.vo.EmployeeRankVO;
-import com.octopuz.platform.vo.EmployeeTrendVO;
+import com.octopuz.platform.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
@@ -95,42 +92,67 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     @Cacheable(value = "analysis:dept-avg",
                 key = "#year+'-'+#quarter")
     @Override
-    public BigDecimal getDepartmentAvgScore(Integer year, Integer quarter, String department) {
-        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Employee::getDepartment, department);
-        List<Employee> employees = employeeMapper.selectList(queryWrapper);
-        if (employees.isEmpty()) return BigDecimal.ZERO;
+    public DepartmentAvgScoreVO getDepartmentAvgScore(Integer year, Integer quarter, String department) {
+        try {
+            String jsonResult = pythonScriptExecutor.execute("dept_avg",
+                    String.valueOf(year), String.valueOf(quarter), department);
 
-        //获得员工工号
-        List<String> empNos = employees.stream()
-                .map(Employee::getEmpNo)
-                .toList();
-        LambdaQueryWrapper<Performance> perfWrapper = new LambdaQueryWrapper<>();
-        perfWrapper.in(Performance::getEmpNo, empNos)
-                .eq(Performance::getYear, year)
-                .eq(Performance::getQuarter, quarter);
-        List<Performance> performances = performanceMapper.selectList(perfWrapper);
-        if (performances.isEmpty()) return BigDecimal.ZERO;
-        //获得平均分
-        BigDecimal avgScore = performances.stream()
-                .map(Performance::getScore)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return avgScore.divide(new BigDecimal(performances.size()), 2, RoundingMode.HALF_UP);
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            List<DepartmentAvgScoreVO> list = JSON.parseArray(cleanedJson, DepartmentAvgScoreVO.class);
+            return list.isEmpty() ? null : list.get(0);
+        } catch (Exception e) {
+            log.error("部门平均分查询失败", e);
+            throw new RuntimeException("部门平均分查询失败: " + e.getMessage(), e);
+        }
     }
+        //        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(Employee::getDepartment, department);
+//        List<Employee> employees = employeeMapper.selectList(queryWrapper);
+//        if (employees.isEmpty()) return BigDecimal.ZERO;
+//
+//        //获得员工工号
+//        List<String> empNos = employees.stream()
+//                .map(Employee::getEmpNo)
+//                .toList();
+//        LambdaQueryWrapper<Performance> perfWrapper = new LambdaQueryWrapper<>();
+//        perfWrapper.in(Performance::getEmpNo, empNos)
+//                .eq(Performance::getYear, year)
+//                .eq(Performance::getQuarter, quarter);
+//        List<Performance> performances = performanceMapper.selectList(perfWrapper);
+//        if (performances.isEmpty()) return BigDecimal.ZERO;
+//        //获得平均分
+//        BigDecimal avgScore = performances.stream()
+//                .map(Performance::getScore)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//        return avgScore.divide(new BigDecimal(performances.size()), 2, RoundingMode.HALF_UP);
+//    }
 
     @Cacheable(value = "analysis:company-avg",
                 key = "#year+'-'+#quarter")
     @Override
-    public BigDecimal getCompanyAvgScore(Integer year, Integer quarter) {
+    public CompanyAvgScoreVO getCompanyAvgScore(Integer year, Integer quarter) {
+        try {
+            String jsonResult = pythonScriptExecutor.execute("company_avg",
+                    String.valueOf(year), String.valueOf(quarter));
 
-        LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Performance::getYear, year)
-                .eq(Performance::getQuarter, quarter);
-        return performanceMapper.selectList(queryWrapper).stream()
-                .map(Performance::getScore)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(new BigDecimal(performanceMapper.selectList(queryWrapper).size()), 2, RoundingMode.HALF_UP);
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            List<CompanyAvgScoreVO> list = JSON.parseArray(cleanedJson, CompanyAvgScoreVO.class);
+            return list.isEmpty() ? null : list.get(0);
+        } catch (Exception e) {
+            log.error("公司平均分查询失败", e);
+            throw new RuntimeException("公司平均分查询失败: " + e.getMessage(), e);
+        }
     }
+//        LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(Performance::getYear, year)
+//                .eq(Performance::getQuarter, quarter);
+//        return performanceMapper.selectList(queryWrapper).stream()
+//                .map(Performance::getScore)
+//                .reduce(BigDecimal.ZERO, BigDecimal::add)
+//                .divide(new BigDecimal(performanceMapper.selectList(queryWrapper).size()), 2, RoundingMode.HALF_UP);
+//    }
 
 
     @Cacheable(value = "analysis:rank",

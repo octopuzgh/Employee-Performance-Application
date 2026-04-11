@@ -20,9 +20,11 @@ logger = logging.getLogger(__name__)
 # 路由映射
 handlers = {
     "dept_stats": "statistics.dept_stats",
-    "emp_rank": "statistics.emp_rank",
     "dept_rank": "statistics.dept_rank",
+    "dept_avg": "statistics.dept_avg",
+    "emp_rank": "statistics.emp_rank",
     "emp_trend": "statistics.emp_trend",
+    "company_avg": "statistics.company_avg",
     "company_summary": "statistics.company_summary",
     "anomaly_detect": "statistics.anomaly_detect"
 }

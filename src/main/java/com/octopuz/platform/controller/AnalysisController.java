@@ -94,6 +94,19 @@ public class AnalysisController {
             return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
         }
     }
+    @GetMapping("/companySummary")
+    public Result<CompanySummaryVO> getCompanySummary(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer quarter) {
+
+        log.info("开始查询公司总览... year = {},quarter = {}", year, quarter);
+        try {
+            CompanySummaryVO companySummary = analysisService.getCompanySummary(year,quarter);
+            return companySummary == null ? Result.error(ResultCode.NOT_FOUND, "没有公司总览数据") : Result.success(companySummary);
+        } catch (Exception e) {
+            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+        }
+    }
 
 
 }

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 @Slf4j
 @Service
@@ -251,6 +252,26 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
         } catch (Exception e) {
             log.error("Python脚本执行错误", e);
             return null;
+        }
+    }
+
+    @Override
+    @Cacheable(value = "analysis:company-summary", key = "(#year ?: 'all') + '-' + (#quarter ?: 'all')")
+    public CompanySummaryVO getCompanySummary(Integer year,Integer quarter) {
+        try {
+            List<String> args = new ArrayList<>();
+            if(year != null){
+                args.add(String.valueOf(year));
+                if (quarter != null) {
+                    args.add(String.valueOf(quarter));
+                }
+            }
+            String jsonResult = pythonScriptExecutor.execute("company_summary", args.toArray(new String[0]));
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+            return JSON.parseObject(cleanedJson, CompanySummaryVO.class);
+        } catch (Exception e) {
+            log.error("公司总览查询失败", e);
+            throw new RuntimeException("公司总览查询失败: " + e.getMessage(), e);
         }
     }
 //

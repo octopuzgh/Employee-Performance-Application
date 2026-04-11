@@ -22,4 +22,6 @@ public interface AnalysisService{
     List<DepartmentStatsVO> getDepartmentStats();
 
     List<EmployeeRankVO> getEmployeeRank(Integer topN);
+
+    CompanySummaryVO getCompanySummary(Integer year, Integer quarter);
 }

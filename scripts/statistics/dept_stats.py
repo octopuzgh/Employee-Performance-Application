@@ -7,7 +7,7 @@ from common.db_utils import get_spark_session, read_table
 from common.json_utils import df_to_json
 
 
-def run():
+def run(*args):
     """部门统计：平均分、最高分、最低分"""
     spark = None
     try:

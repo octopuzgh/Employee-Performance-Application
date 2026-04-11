@@ -62,7 +62,7 @@ ssh:
   REMOTE_PORT: 22
   REMOTE_USER: octopuz_remote
   PRIVATE_KEY_PATH: C:/Users/octopuz/.ssh/id_rsa
-  TIMEOUT: 10000
+  TIMEOUT: 60000
 
 
 

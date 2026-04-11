@@ -15,6 +15,7 @@ import com.octopuz.platform.vo.DepartmentRankVO;
 import com.octopuz.platform.vo.DepartmentStatsVO;
 import com.octopuz.platform.vo.EmployeeRankVO;
 import com.octopuz.platform.vo.EmployeeTrendVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-
+@Slf4j
 @Service
 public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performance> implements AnalysisService {
     @Autowired
@@ -176,11 +177,17 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     @Cacheable(value = "analysis:dept-stats")
     public List<DepartmentStatsVO> getDepartmentStats() {
         try {
-            String jsonResult = pythonScriptExecutor.execute("statistics/dept_stats.py");
+            log.info("开始调用 Python 脚本: dept_stats");
+            String jsonResult = pythonScriptExecutor.execute("dept_stats");
+            log.info("Python 脚本返回长度: {}", jsonResult.length());
 
             String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+            log.info("清理后 JSON: {}", cleanedJson.substring(0, Math.min(100, cleanedJson.length())));
 
-            return JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
+            List<DepartmentStatsVO> result = JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
+            log.info("解析成功，数据条数: {}", result.size());
+
+            return result;
         } catch (Exception e) {
             log.error("dept_stats.py脚本执行错误", e);
             return null;
@@ -194,7 +201,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             if(topN == null || topN <= 0){
                 topN = 10;
             }
-            String jsonResult = pythonScriptExecutor.executeWithArgs("statistics/emp_rank.py", String.valueOf(topN));
+            String jsonResult = pythonScriptExecutor.execute("emp_rank", String.valueOf(topN));
             String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
 
             return JSON.parseArray(cleanedJson, EmployeeRankVO.class);
@@ -204,6 +211,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
         }
     }
 //
+
 //        return getEmployeeTrend(empNo).stream()
 //                .map(item -> EmployeeTrendVO.builder()
 //                        .year((Integer) item.get("year"))

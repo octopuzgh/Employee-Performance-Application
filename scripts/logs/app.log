@@ -1,0 +1,14 @@
+2026-04-11 15:03:28,923 - INFO - 执行统计任务: dept_avg
+2026-04-11 15:03:29,025 - ERROR - 统计任务失败: dept_avg, 错误: run() takes 0 positional arguments but 1 was given
+2026-04-11 15:20:06,459 - INFO - 执行统计任务: dept_stats
+2026-04-11 15:20:15,147 - INFO - 统计任务完成: dept_stats
+2026-04-11 15:20:15,147 - INFO - Closing down clientserver connection
+2026-04-11 15:26:16,991 - INFO - 执行统计任务: dept_stats
+2026-04-11 15:26:24,407 - INFO - 统计任务完成: dept_stats
+2026-04-11 15:26:24,409 - INFO - Closing down clientserver connection
+2026-04-11 15:32:17,532 - INFO - 执行统计任务: emp_rank
+2026-04-11 15:32:25,216 - INFO - 统计任务完成: emp_rank
+2026-04-11 15:32:25,216 - INFO - Closing down clientserver connection
+2026-04-11 15:32:39,334 - INFO - 执行统计任务: dept_stats
+2026-04-11 15:32:46,935 - INFO - 统计任务完成: dept_stats
+2026-04-11 15:32:46,936 - INFO - Closing down clientserver connection

@@ -17,50 +17,34 @@ public class PythonScriptExecutor {
     private static final String REMOTE_SCRIPT_BASE_PATH = "/mnt/hgfs/share_files/platform/scripts";
 
     /**
-     * 执行远程 Python 脚本
-     */
-    public String execute(String scriptPath) {
-        return executeWithArgs(scriptPath);
-    }
-
-    /**
-     * 执行带参数的 Python 脚本
-     * @param scriptPath 脚本路径
+     * 执行远程 Python 脚本（通过统一入口）
+     * @param statType 统计类型（如 dept_avg, emp_rank）
      * @param args 参数列表
      * @return 脚本输出结果
      */
-    public String executeWithArgs(String scriptPath, String... args) {
-        String fullPath = REMOTE_SCRIPT_BASE_PATH + "/" + scriptPath;
-        String command = buildCommand(fullPath, args);
-
-        log.debug("执行远程 Python 脚本: {}", command);
-
-        try {
-            String result = sshExecutor.execute(command);
-            log.debug("脚本执行成功，返回长度: {}", result.length());
-            return result;
-        } catch (Exception e) {
-            log.error("脚本执行失败: {}", e.getMessage(), e);
-            throw new RuntimeException("Python 脚本执行失败: " + e.getMessage(), e);
-        }
-    }
-
-    private String buildCommand(String scriptPath, String... args) {
+    public String execute(String statType, String... args) {
         StringBuilder command = new StringBuilder();
 
-        String scriptDir = scriptPath.substring(0, scriptPath.lastIndexOf('/'));
-        String scriptName = scriptPath.substring(scriptPath.lastIndexOf('/') + 1);
-
-        command.append("cd ").append(scriptDir).append(" && ");
-        command.append("python3 ").append(scriptName);
+        command.append("cd ").append(REMOTE_SCRIPT_BASE_PATH).append(" && ");
+        command.append("python3 main.py ").append(statType);
 
         if (args != null && args.length > 0) {
             command.append(" ").append(Arrays.stream(args)
                     .map(arg -> "\"" + arg + "\"")
                     .collect(Collectors.joining(" ")));
         }
+        String commandStr = command.toString();
 
-        return command.toString();
+        log.debug("执行远程 Python 脚本: {}", commandStr);
+
+        try {
+            String result = sshExecutor.execute(commandStr);
+            log.debug("脚本执行成功，返回长度: {}", result.length());
+            return result;
+        } catch (Exception e) {
+            log.error("脚本执行失败: {}", e.getMessage(), e);
+            throw new RuntimeException("Python 脚本执行失败: " + e.getMessage(), e);
+        }
     }
 
     public String extractJson(String content) {

@@ -8,32 +8,36 @@ from common.json_utils import df_to_json
 
 
 def run(*args):
-    """员工个人排名 Top N"""
+    """部门排名"""
     spark = None
     try:
         spark = get_spark_session()
-        top_n = int(args[0]) if len(args) > 0 else 10
-        # 读取表并注册为临时视图
+
+        if len(args) < 2:
+            return '{"error": "缺少参数，需要提供 year 和 quarter"}'
+
+        year = int(args[0])
+        quarter = int(args[1])
+
         emp_df = read_table(spark, "employee")
         perf_df = read_table(spark, "performance")
 
         emp_df.createOrReplaceTempView("employee")
         perf_df.createOrReplaceTempView("performance")
 
-        # 使用 SQL 查询：按员工平均绩效排名
         sql = f"""
             SELECT 
-                e.emp_no,
-                e.name,
                 e.department,
-                e.position,
                 ROUND(AVG(p.score), 2) AS avg_score,
-                COUNT(p.score) AS record_count
+                MAX(p.score) AS max_score,
+                MIN(p.score) AS min_score,
+                COUNT(p.emp_no) AS emp_count,
+                RANK() OVER (ORDER BY AVG(p.score) DESC) AS rank_num
             FROM employee e
             INNER JOIN performance p ON e.emp_no = p.emp_no
-            GROUP BY e.emp_no, e.name, e.department, e.position
-            ORDER BY avg_score DESC
-            LIMIT {top_n}
+            WHERE p.year = {year} AND p.quarter = {quarter}
+            GROUP BY e.department
+            ORDER BY rank_num
         """
 
         result_df = spark.sql(sql)
@@ -41,7 +45,7 @@ def run(*args):
         return df_to_json(result_df)
 
     except Exception as e:
-
+        import json
         print(json.dumps({"error": str(e)}), file=sys.stderr)
         raise
     finally:
@@ -50,6 +54,11 @@ def run(*args):
 
 
 if __name__ == "__main__":
-    # 支持命令行参数指定 Top N，默认 10
-    top_n = int(sys.argv[1]) if len(sys.argv) > 1 else 10
-    print(run(top_n))
+    if len(sys.argv) < 3:
+        print('{"error": "用法: python3 dept_rank.py <year> <quarter>"}')
+        sys.exit(1)
+
+    year = int(sys.argv[1])
+    quarter = int(sys.argv[2])
+    print(run(year, quarter))
+

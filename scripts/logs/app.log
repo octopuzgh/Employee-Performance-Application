@@ -12,3 +12,9 @@
 2026-04-11 15:32:39,334 - INFO - 执行统计任务: dept_stats
 2026-04-11 15:32:46,935 - INFO - 统计任务完成: dept_stats
 2026-04-11 15:32:46,936 - INFO - Closing down clientserver connection
+2026-04-11 16:22:28,899 - INFO - 执行统计任务: dept_rank
+2026-04-11 16:22:37,572 - INFO - 统计任务完成: dept_rank
+2026-04-11 16:22:37,573 - INFO - Closing down clientserver connection
+2026-04-11 16:36:20,097 - INFO - 执行统计任务: emp_trend
+2026-04-11 16:36:27,650 - INFO - 统计任务完成: emp_trend
+2026-04-11 16:36:27,651 - INFO - Closing down clientserver connection

@@ -1,5 +1,6 @@
 package com.octopuz.platform.vo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +13,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class DepartmentRankVO {
-    //部门名称
     private String department;
-    //平均分数
+    @JSONField(name = "avg_score")
     private BigDecimal avgScore;
-    //员工数量
+    @JSONField(name = "max_score")
+    private BigDecimal maxScore;
+    @JSONField(name = "min_score")
+    private BigDecimal minScore;
+    @JSONField(name = "emp_count")
     private Integer employeeCount;
-    //排名
+    @JSONField(name = "rank_num")
     private Integer departmentRank;
 }

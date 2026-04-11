@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 handlers = {
     "dept_stats": "statistics.dept_stats",
     "emp_rank": "statistics.emp_rank",
-    "quarter_trend": "statistics.quarter_trend",
+    "dept_rank": "statistics.dept_rank",
+    "emp_trend": "statistics.emp_trend",
     "company_summary": "statistics.company_summary",
     "anomaly_detect": "statistics.anomaly_detect"
 }

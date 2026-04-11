@@ -156,21 +156,31 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             key = "#empNo")
     @Override
     public List<EmployeeTrendVO> getEmployeeTrendVO(String empNo) {
-        List<EmployeeTrendVO> employeeTrendVO = analysisMapper.getEmployeeTrendVO(empNo);
-        //使用枚举
+        try {
+            String jsonResult = pythonScriptExecutor.execute("emp_trend", empNo);
 
-        for (EmployeeTrendVO et : employeeTrendVO) {
-            if (et.getGrowthRate() == null) {
-                et.setTrend(TrendType.FIRST);
-            } else if (et.getGrowthRate().compareTo(BigDecimal.ZERO) > 0) {
-                et.setTrend(TrendType.UP);
-            } else if (et.getGrowthRate().compareTo(BigDecimal.ZERO) < 0) {
-                et.setTrend(TrendType.DOWN);
-            } else {
-                et.setTrend(TrendType.STABLE);
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            List<EmployeeTrendVO> trends = JSON.parseArray(cleanedJson, EmployeeTrendVO.class);
+
+            // 计算 trend 字段
+            for (EmployeeTrendVO et : trends) {
+                if (et.getGrowthRate() == null) {
+                    et.setTrend(TrendType.FIRST);
+                } else if (et.getGrowthRate().compareTo(BigDecimal.ZERO) > 0) {
+                    et.setTrend(TrendType.UP);
+                } else if (et.getGrowthRate().compareTo(BigDecimal.ZERO) < 0) {
+                    et.setTrend(TrendType.DOWN);
+                } else {
+                    et.setTrend(TrendType.STABLE);
+                }
             }
+
+            return trends;
+        } catch (Exception e) {
+            log.error("员工趋势查询失败", e);
+            throw new RuntimeException("员工趋势查询失败: " + e.getMessage(), e);
         }
-        return employeeTrendVO;
     }
 
     @Override

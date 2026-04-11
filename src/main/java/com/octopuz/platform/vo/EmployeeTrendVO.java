@@ -1,5 +1,6 @@
 package com.octopuz.platform.vo;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.octopuz.platform.enums.TrendType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ public class EmployeeTrendVO {
     //姓名
     private String name;
     //工号
+    @JSONField(name = "emp_no")
     private String empNo;
     //年份
     private Integer year;
@@ -24,6 +26,7 @@ public class EmployeeTrendVO {
     //分数
     private BigDecimal score;
     //环比增长百分比（上一季度）
+    @JSONField(name = "growth_rate")
     private BigDecimal growthRate;
     //趋势标识
     private TrendType trend;

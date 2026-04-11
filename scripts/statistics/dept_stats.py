@@ -1,6 +1,6 @@
 import sys
 import os
-
+import json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from common.db_utils import get_spark_session, read_table
@@ -38,7 +38,7 @@ def run(*args):
         return df_to_json(result_df)
 
     except Exception as e:
-        import json
+
         print(json.dumps({"error": str(e)}), file=sys.stderr)
         raise
     finally:

@@ -24,4 +24,6 @@ public interface AnalysisService{
     List<EmployeeRankVO> getEmployeeRank(Integer topN);
 
     CompanySummaryVO getCompanySummary(Integer year, Integer quarter);
+
+    List<AnomalyDetectVO> getAnomalyDetect(BigDecimal threshold);
 }

@@ -274,6 +274,26 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             throw new RuntimeException("公司总览查询失败: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    @Cacheable(value = "analysis:anomaly-detect", key = "#threshold ?: '20'")
+    public List<AnomalyDetectVO> getAnomalyDetect(BigDecimal threshold) {
+        try {
+            if (threshold == null) {
+                threshold = new BigDecimal("20");
+            }
+
+            String jsonResult = pythonScriptExecutor.execute("anomaly_detect",
+                    threshold.toString());
+
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            return JSON.parseArray(cleanedJson, AnomalyDetectVO.class);
+        } catch (Exception e) {
+            log.error("异常检测查询失败", e);
+            throw new RuntimeException("异常检测查询失败: " + e.getMessage(), e);
+        }
+    }
 //
 
 //        return getEmployeeTrend(empNo).stream()

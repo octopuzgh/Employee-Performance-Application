@@ -107,6 +107,16 @@ public class AnalysisController {
             return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
         }
     }
+    @GetMapping("/anomalyDetect")
+    public Result<List<AnomalyDetectVO>> getAnomalyDetect(@RequestParam BigDecimal threshold) {
+        log.info("开始查询异常检测... threshold = {}", threshold);
+        try {
+            List<AnomalyDetectVO> anomalyDetect = analysisService.getAnomalyDetect(threshold);
+            return anomalyDetect.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有异常检测数据") : Result.success(anomalyDetect);
+        } catch (Exception e) {
+            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+        }
+    }
 
 
 }

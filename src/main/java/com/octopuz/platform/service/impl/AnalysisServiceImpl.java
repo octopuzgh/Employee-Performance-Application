@@ -133,12 +133,22 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     }
 
 
-
     @Cacheable(value = "analysis:rank",
             key = "#year+'-'+#quarter")
     @Override
     public List<DepartmentRankVO> getDepartmentRankVO(Integer year, Integer quarter) {
-        return analysisMapper.getDepartmentRankVO(year, quarter);
+        try {
+            String jsonResult = pythonScriptExecutor.execute("dept_rank",
+                    String.valueOf(year), String.valueOf(quarter));
+
+            String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
+
+            return JSON.parseArray(cleanedJson, DepartmentRankVO.class);
+        } catch (Exception e) {
+            log.error("部门排名查询失败", e);
+            throw new RuntimeException("部门排名查询失败: " + e.getMessage(), e);
+        }
+        //return analysisMapper.getDepartmentRankVO(year, quarter);
     }
 
     //        return getDepartmentRank(year,quarter).stream()
@@ -181,6 +191,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
             log.error("员工趋势查询失败", e);
             throw new RuntimeException("员工趋势查询失败: " + e.getMessage(), e);
         }
+        //return analysisMapper.getEmployeeTrendVO(empNo);
     }
 
     @Override

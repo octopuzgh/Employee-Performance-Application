@@ -4,29 +4,35 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.octopuz.platform.dto.PerformanceExcel;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.vo.PerformanceVO;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface PerformanceService extends IService<Performance> {
-    //按工号查绩效
-    List<Performance> getByEmpNo(String empNo);
-    //按年份查绩效
-    List<Performance> getByYear(Integer year);
-    //按年份和季度查绩效
-    List<Performance> getByYearAndQuarter(Integer year, Integer quarter);
 
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    PerformanceVO addOrUpdatePerformance(PerformanceVO performanceVO);
 
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    void deletePerformance(Integer id);
 
-    boolean removeById(Integer id);
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    PerformanceVO updatePerformance(PerformanceVO performanceVO);
 
-    //添加或修改绩效
-    boolean addOrUpdate(Performance performance);
-    //转换为VO
-    PerformanceVO convertToVO(Performance performance);
-    List<PerformanceVO> convertToVOList(List<Performance> performances);
+    PerformanceVO getPerformanceById(Integer id);
 
-    List<PerformanceExcel> convertToExcelList(List<Performance> performances);
+    List<PerformanceVO> getPerformancesByEmpNo(String empNo);
 
+    List<PerformanceVO> getPerformancesByYear(Integer year);
+
+    List<PerformanceVO> getPerformancesByYearAndQuarter(Integer year, Integer quarter);
+
+    List<PerformanceVO> getAllPerformances();
+
+    // Excel 相关
+    List<PerformanceExcel> convertToExcelList(List<PerformanceVO> performances);
+
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
     String importExcel(MultipartFile file);
 }

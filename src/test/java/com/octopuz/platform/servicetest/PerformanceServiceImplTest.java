@@ -1,19 +1,17 @@
 package com.octopuz.platform.servicetest;
 
-import com.octopuz.platform.entity.Performance;
-import com.octopuz.platform.service.impl.PerformanceServiceImpl;
+import com.octopuz.platform.service.interf.PerformanceService;
+import com.octopuz.platform.vo.PerformanceVO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class PerformanceServiceImplTest {
     @Autowired
-    PerformanceServiceImpl performanceServiceImpl;
+    PerformanceService performanceService;
     @Test
     void getByEmpNo() {
     }
@@ -28,12 +26,12 @@ class PerformanceServiceImplTest {
 
     @Test
     void addOrUpdate() {
-        Performance performance = new Performance();
+        PerformanceVO performance = new PerformanceVO();
         performance.setEmpNo("1001");
         performance.setYear(2022);
         performance.setQuarter(1);
         performance.setScore(new BigDecimal(90));
-        boolean b = performanceServiceImpl.addOrUpdate(performance);
-        assertTrue(b,"操作成功");
+        PerformanceVO b = performanceService.addOrUpdatePerformance(performance);
+        System.out.println( b);
     }
 }

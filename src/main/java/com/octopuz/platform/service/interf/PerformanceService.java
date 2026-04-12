@@ -11,14 +11,39 @@ import java.util.List;
 
 public interface PerformanceService extends IService<Performance> {
 
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    @CacheEvict(value = {
+            "analysis:rank",
+            "analysis:trend",
+            "analysis:dept-stats",
+            "analysis:emp-rank",
+            "analysis:dept-avg",
+            "analysis:company-avg",
+            "analysis:company-summary",
+            "analysis:anomaly-detect"
+    }, allEntries = true)
     PerformanceVO addOrUpdatePerformance(PerformanceVO performanceVO);
 
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    void deletePerformance(Integer id);
+    @CacheEvict(value = {
+            "analysis:rank",
+            "analysis:trend",
+            "analysis:dept-stats",
+            "analysis:emp-rank",
+            "analysis:dept-avg",
+            "analysis:company-avg",
+            "analysis:company-summary",
+            "analysis:anomaly-detect"
+    }, allEntries = true)void deletePerformance(Integer id);
 
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    PerformanceVO updatePerformance(PerformanceVO performanceVO);
+    @CacheEvict(value = {
+            "analysis:rank",
+            "analysis:trend",
+            "analysis:dept-stats",
+            "analysis:emp-rank",
+            "analysis:dept-avg",
+            "analysis:company-avg",
+            "analysis:company-summary",
+            "analysis:anomaly-detect"
+    }, allEntries = true)PerformanceVO updatePerformance(PerformanceVO performanceVO);
 
     PerformanceVO getPerformanceById(Integer id);
 
@@ -33,6 +58,14 @@ public interface PerformanceService extends IService<Performance> {
     // Excel 相关
     List<PerformanceExcel> convertToExcelList(List<PerformanceVO> performances);
 
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    String importExcel(MultipartFile file);
+    @CacheEvict(value = {
+            "analysis:rank",
+            "analysis:trend",
+            "analysis:dept-stats",
+            "analysis:emp-rank",
+            "analysis:dept-avg",
+            "analysis:company-avg",
+            "analysis:company-summary",
+            "analysis:anomaly-detect"
+    }, allEntries = true)String importExcel(MultipartFile file);
 }

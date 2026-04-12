@@ -103,6 +103,16 @@ public class EmployeeController {
             return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public Result<List<EmployeeVO>> searchByName(@RequestParam String name) {
+        try {
+            List<EmployeeVO> employees = employeeService.searchEmployeesByName(name);
+            return Result.success(employees);
+        } catch (Exception e) {
+            log.error("搜索员工失败，name: {}", name, e);
+            return Result.error(ResultCode.ERROR, "搜索失败：" + e.getMessage());
+        }
+    }
 
     @GetMapping("/page")
     public Result<Page<EmployeeVO>> page(@RequestParam(defaultValue = "1") Integer pageNum,

@@ -16,7 +16,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -123,6 +122,13 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         return employeeConverter.toVO(employee);
     }
     @Override
+    public List<EmployeeVO> searchEmployeesByName(String name) {
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(Employee::getName, name.trim());
+        List<Employee> employees = list(wrapper);
+        return employeeConverter.toVOList(employees);
+    }
+    @Override
     public List<EmployeeVO> getAllEmployees() {
         List<Employee> employees = list();
         return employeeConverter.toVOList(employees);
@@ -210,12 +216,12 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                     return  "导入员工数据异常，请检查数据格式是否正确";
                 }
                 //保存
-                boolean saved = this.saveBatch(excelListener.getEmployees());
+                boolean saved = saveBatch(excelListener.getEmployees());
                 if(!saved){
                     return "导入员工数据异常，请检查数据格式是否正确";
                 } else {
                     int size = excelListener.getEmployees().size();
-                    log.info("导入员工数据成功,共导入{}条", excelListener.getEmployees().size());
+                    log.info("导入员工数据成功,共导入{}条", size);
                     kafkaSender.sendOperationLog("IMPORT_EXCEL_EMPLOYEES",
                             "导入员工数据成功,共导入"+size+"条");
                     return null;

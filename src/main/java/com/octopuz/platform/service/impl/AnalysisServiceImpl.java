@@ -1,13 +1,9 @@
 package com.octopuz.platform.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.entity.Performance;
 import com.octopuz.platform.enums.TrendType;
-import com.octopuz.platform.mapper.AnalysisMapper;
-import com.octopuz.platform.mapper.EmployeeMapper;
 import com.octopuz.platform.mapper.PerformanceMapper;
 import com.octopuz.platform.service.interf.AnalysisService;
 import com.octopuz.platform.utils.PythonScriptExecutor;
@@ -18,18 +14,17 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 @Slf4j
 @Service
 public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performance> implements AnalysisService {
-    @Autowired
-    private PerformanceMapper performanceMapper;
-    @Autowired
-    private EmployeeMapper employeeMapper;
-    @Autowired
-    private AnalysisMapper analysisMapper;
+//    @Autowired
+//    private PerformanceMapper performanceMapper;
+//    @Autowired
+//    private EmployeeMapper employeeMapper;
+//    @Autowired
+//    private AnalysisMapper analysisMapper;
     @Autowired
     private PythonScriptExecutor pythonScriptExecutor;
 
@@ -233,10 +228,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 
 
             String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
-
-            List<DepartmentStatsVO> result = JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
-
-            return result;
+            return JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
         } catch (Exception e) {
             log.error("dept_stats.py脚本执行错误", e);
             throw new RuntimeException("dept_stats.py脚本执行错误: " + e.getMessage(), e);

@@ -6,6 +6,7 @@ import com.octopuz.platform.dto.EmployeeExcel;
 import com.octopuz.platform.entity.Employee;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 @Slf4j
 @Data
 @AllArgsConstructor
-
+@EqualsAndHashCode(callSuper = false)
 public class EmployeeExcelListener extends AnalysisEventListener<EmployeeExcel> {
 
     private final ArrayList<Employee> employees = new ArrayList<>();

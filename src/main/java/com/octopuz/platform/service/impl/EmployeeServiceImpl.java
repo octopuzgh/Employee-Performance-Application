@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.octopuz.platform.converter.EmployeeConverter;
 import com.octopuz.platform.dto.EmployeeExcel;
 import com.octopuz.platform.entity.Employee;
 import com.octopuz.platform.listener.EmployeeExcelListener;
@@ -17,11 +18,10 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -30,65 +30,147 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     @Resource
     private RedissonClient redissonClient;
     @Resource
-    private KafkaSender KafkaSender;
+    private KafkaSender kafkaSender;
+    @Resource
+    private EmployeeConverter employeeConverter;
 
     @Override
-    public Page<Employee> pageEmployees(Integer pageNum, Integer pageSize){
-        return this.page(new Page<>(pageNum, pageSize));
+    public EmployeeVO addEmployee(EmployeeVO employeeVO) {
+        if (employeeVO.getId() != null) {
+            throw new IllegalArgumentException("员工ID必须为空");
+        }
+
+        Employee employee = employeeConverter.toEntity(employeeVO);
+
+        boolean saved = save(employee);
+        if (!saved) {
+            throw new RuntimeException("添加员工失败");
+        }
+
+        kafkaSender.sendOperationLog("CREATE_EMPLOYEE",
+                String.format("员工%s创建成功,工号为%s", employee.getName(), employee.getEmpNo()));
+
+        return employeeConverter.toVO(employee);
+    }
+    @Override
+    public void deleteEmployee(Integer id) {
+        Employee employee = getById(id);
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+
+        boolean removed = removeById(id);
+        if (!removed) {
+            throw new RuntimeException("删除员工失败");
+        }
+
+        kafkaSender.sendOperationLog("DELETE_EMPLOYEE",
+                String.format("员工%s删除成功,工号为%s", employee.getName(), employee.getEmpNo()));
+    }
+    @Override
+    public EmployeeVO updateEmployee(EmployeeVO employeeVO) {
+        if (employeeVO.getId() == null) {
+            throw new IllegalArgumentException("员工ID不能为空");
+        }
+
+        Employee existing = getById(employeeVO.getId());
+        if (existing == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+
+        Employee employee = employeeConverter.toEntity(employeeVO);
+
+        boolean updated = updateById(employee);
+        if (!updated) {
+            throw new RuntimeException("更新员工失败");
+        }
+
+        kafkaSender.sendOperationLog("UPDATE_EMPLOYEE",
+                String.format("员工%s更新成功,工号为%s", employee.getName(), employee.getEmpNo()));
+
+        return employeeConverter.toVO(employee);
+    }
+    @Override
+    public EmployeeVO getEmployeeById(Integer id) {
+        Employee employee = getById(id);
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        return employeeConverter.toVO(employee);
+    }
+    @Override
+    public EmployeeVO getEmployeeByEmpNo(String empNo) {
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Employee::getEmpNo, empNo);
+        Employee employee = getOne(wrapper);
+
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        return employeeConverter.toVO(employee);
     }
 
-    @Override
-    public List<Employee> getByDepartment(String department){
-        LambdaQueryWrapper<Employee> employeeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        employeeLambdaQueryWrapper.eq(Employee::getDepartment, department);
-        return this.list(employeeLambdaQueryWrapper);
 
-    }
     @Override
-    public Employee getByName(String name){
-        LambdaQueryWrapper<Employee> employeeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        employeeLambdaQueryWrapper.eq(Employee::getName, name);
-        return this.getOne(employeeLambdaQueryWrapper);
+    public EmployeeVO getEmployeeByName(String name) {
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Employee::getName, name);
+        Employee employee = getOne(wrapper);
 
+        if (employee == null) {
+            throw new IllegalArgumentException("员工不存在");
+        }
+        return employeeConverter.toVO(employee);
     }
     @Override
-    public Employee getByEmpNo(String empNo){
-        LambdaQueryWrapper<Employee> employeeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        employeeLambdaQueryWrapper.eq(Employee::getEmpNo, empNo);
-        return this.getOne(employeeLambdaQueryWrapper);
+    public List<EmployeeVO> getAllEmployees() {
+        List<Employee> employees = list();
+        return employeeConverter.toVOList(employees);
+    }
+    @Override
+    public Page<EmployeeVO> pageEmployees(Integer pageNum, Integer pageSize, String department, String position) {
+        if (pageNum == null || pageNum <= 0) {
+            throw new IllegalArgumentException("页码必须大于0");
+        }
+        if (pageSize == null || pageSize <= 0) {
+            throw new IllegalArgumentException("页大小必须大于0");
+        }
+        if (pageSize > 100) {
+            throw new IllegalArgumentException("页大小不能超过100");
+        }
+
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(department)) {
+            wrapper.eq(Employee::getDepartment, department);
+        }
+        if (StringUtils.hasText(position)) {
+            wrapper.eq(Employee::getPosition, position);
+        }
+
+        Page<Employee> page = new Page<>(pageNum, pageSize);
+        Page<Employee> resultPage = page(page, wrapper);
+
+        Page<EmployeeVO> voPage = new Page<>();
+        voPage.setCurrent(resultPage.getCurrent());
+        voPage.setSize(resultPage.getSize());
+        voPage.setTotal(resultPage.getTotal());
+        voPage.setRecords(employeeConverter.toVOList(resultPage.getRecords()));
+
+        return voPage;
+    }
+    @Override
+    public List<EmployeeVO> getEmployeesByDepartment(String department) {
+        LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Employee::getDepartment, department);
+        List<Employee> employees = list(wrapper);
+        return employeeConverter.toVOList(employees);
+    }
 
 
-    }
+
+
     @Override
-    public EmployeeVO convertToVO(Employee employee){
-        if(employee==null) return null;
-        return EmployeeVO.builder()
-                .id(employee.getId())
-                .empNo(employee.getEmpNo())
-                .name(employee.getName())
-                .department(employee.getDepartment())
-                .position(employee.getPosition())
-                .hireDate(employee.getHireDate())
-                .email(employee.getEmail())
-                .build();
-    }
-    @Override
-    public  List<EmployeeVO> convertToVOList(List<Employee> employees){
-        if(employees==null) return List.of();
-        return employees.stream().map(this::convertToVO).toList();
-    }
-    @Override
-    public Page<EmployeeVO> convertToVOPage(Page<Employee> page){
-        if(page==null) return null;
-        Page<EmployeeVO> employeeVOPage = new Page<>();
-        employeeVOPage.setCurrent(page.getCurrent());
-        employeeVOPage.setSize(page.getSize());
-        employeeVOPage.setTotal(page.getTotal());
-        employeeVOPage.setRecords(convertToVOList(page.getRecords()));
-        return employeeVOPage;
-    }
-    @Override
-    public List<EmployeeExcel> convertTOExcelList(List<Employee>  employees){
+    public List<EmployeeExcel> convertToExcelList(List<EmployeeVO> employees){
         if(employees==null) return List.of();
         return employees.stream().map(employee -> EmployeeExcel.builder()
                 .empNo(employee.getEmpNo())
@@ -99,44 +181,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                 .email(employee.getEmail())
                 .build()).toList();
     }
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    @Override
-    public boolean save(Employee employee){
-        if (employee == null) {
-            return false;
-        }
-        boolean saved = super.save(employee);
-        if(saved){
-            KafkaSender.sendOperationLog("CREATE_EMPLOYEE",
-                    String.format("员工%s创建成功,工号为%s", employee.getName(), employee.getEmpNo()));
-        }
-        return saved;
-    }
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    @Override
-    public boolean updateById(Employee employee){
-        Employee oldEmployee = this.getById(employee.getId());
-        if(oldEmployee==null) return false;
 
-        boolean updated = super.updateById(employee);
-        if(updated){
-            KafkaSender.sendOperationLog("UPDATE_EMPLOYEE",
-                    String.format("员工%s更新成功,工号为%s", employee.getName(), employee.getEmpNo()));
-        }
-        return updated;
-    }
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
-    @Override
-    public boolean removeById(Serializable id){
-        Employee oldEmployee = this.getById(id);
-        boolean removed = super.removeById(id);
-        if(removed && oldEmployee!=null){
-            KafkaSender.sendOperationLog("DELETE_EMPLOYEE",
-                    String.format("员工%s删除成功,工号为%s", oldEmployee.getName(), oldEmployee.getEmpNo()));
-        }
-        return removed;
-    }
-    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
     @Override
     public String importExcel(MultipartFile file){
         try {
@@ -171,7 +216,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                 } else {
                     int size = excelListener.getEmployees().size();
                     log.info("导入员工数据成功,共导入{}条", excelListener.getEmployees().size());
-                    KafkaSender.sendOperationLog("IMPORT_EXCEL_EMPLOYEES",
+                    kafkaSender.sendOperationLog("IMPORT_EXCEL_EMPLOYEES",
                             "导入员工数据成功,共导入"+size+"条");
                     return null;
                 }

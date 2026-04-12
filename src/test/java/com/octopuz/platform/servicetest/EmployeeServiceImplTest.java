@@ -1,6 +1,7 @@
 package com.octopuz.platform.servicetest;
 
 import com.octopuz.platform.service.impl.EmployeeServiceImpl;
+import com.octopuz.platform.service.interf.EmployeeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,12 +10,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class EmployeeServiceImplTest {
 
     @Autowired
-    private EmployeeServiceImpl employeeService;
+    private EmployeeService employeeService;
     @Test
     void getByDepartment() {
 
         String department = "技术部" ;
-        employeeService.getByDepartment(department).forEach(System.out::println);
+        employeeService.getEmployeesByDepartment(department).forEach(System.out::println);
 
     }
 }

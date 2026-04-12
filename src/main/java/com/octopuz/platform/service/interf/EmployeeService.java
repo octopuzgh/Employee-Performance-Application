@@ -1,6 +1,5 @@
 package com.octopuz.platform.service.interf;
 
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.octopuz.platform.dto.EmployeeExcel;
@@ -12,22 +11,29 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface EmployeeService extends IService<Employee> {
-    //分页查询
-    Page<Employee> pageEmployees(Integer pageNum, Integer pageSize);
-    //按部门查询
-    List<Employee> getByDepartment(String department);
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    EmployeeVO addEmployee(EmployeeVO employeeVO);
 
-    Employee getByName(String name);
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    void deleteEmployee(Integer id);
 
-    //按工号查询
-    Employee getByEmpNo(String empNo);
-    //转换为VO
-    EmployeeVO convertToVO(Employee employee);
-    List<EmployeeVO> convertToVOList(List<Employee> employees);
-    Page<EmployeeVO> convertToVOPage(Page<Employee> page);
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
+    EmployeeVO updateEmployee(EmployeeVO employeeVO);
 
-    List<EmployeeExcel> convertTOExcelList(List<Employee> employees);
+    EmployeeVO getEmployeeById(Integer id);
 
-    @CacheEvict(value = {"analysis:rank","analysis:dept-avg","analysis:company-avg"}, allEntries = true)
+    EmployeeVO getEmployeeByEmpNo(String empNo);
+
+    EmployeeVO getEmployeeByName(String name);
+
+    List<EmployeeVO> getAllEmployees();
+
+    Page<EmployeeVO> pageEmployees(Integer pageNum, Integer pageSize, String department, String position);
+
+    List<EmployeeVO> getEmployeesByDepartment(String department);
+
+    List<EmployeeExcel> convertToExcelList(List<EmployeeVO> employees);
+
+    @CacheEvict(value = {"analysis:rank", "analysis:dept-avg", "analysis:company-avg"}, allEntries = true)
     String importExcel(MultipartFile file);
 }

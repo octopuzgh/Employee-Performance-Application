@@ -8,6 +8,7 @@ import com.octopuz.platform.service.interf.EmployeeService;
 import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class PerformanceExcelListener extends AnalysisEventListener<PerformanceExcel> {
     @Resource
     private EmployeeService employeeService;
@@ -42,7 +44,7 @@ public class PerformanceExcelListener extends AnalysisEventListener<PerformanceE
                 return;
             }
             //校验员工是否存在
-            if (employeeService.getByEmpNo(data.getEmpNo()) == null) {
+            if (employeeService.getEmployeeByEmpNo(data.getEmpNo()) == null) {
                 errorList.add("第" + (context.readRowHolder().getRowIndex() + 1) + "行数据有误，请检查数据！（员工不存在）");
                 return;
             }

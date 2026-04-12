@@ -2,19 +2,15 @@ package com.octopuz.platform.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.octopuz.platform.common.Result;
 import com.octopuz.platform.common.ResultCode;
 import com.octopuz.platform.dto.EmployeeExcel;
-import com.octopuz.platform.entity.Employee;
-import com.octopuz.platform.mapper.EmployeeMapper;
-import com.octopuz.platform.service.impl.EmployeeServiceImpl;
+import com.octopuz.platform.service.interf.EmployeeService;
 import com.octopuz.platform.vo.EmployeeVO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,74 +24,84 @@ import java.util.List;
 @RequestMapping("/api/employees")
 public class EmployeeController {
     @Resource
-    private EmployeeServiceImpl employeeService;
-    @Resource
-    private EmployeeMapper employeeMapper;
+    private EmployeeService employeeService;
+//    @Resource
+//    private EmployeeMapper employeeMapper;
 
 
     @PostMapping
-    public Result<EmployeeVO> add(@RequestBody Employee employee) {
-        if (employee.getId() != null) {
-            return Result.error(ResultCode.BAD_REQUEST, "员工ID必须为空");
-        }
-        return employeeService.save(employee) ? Result.success(employeeService.convertToVO(employee)) : Result.error(ResultCode.ERROR, "添加失败");
-    }
+    public Result<EmployeeVO> add(@RequestBody EmployeeVO employeeVO) {
+        try {
+            EmployeeVO result = employeeService.addEmployee(employeeVO);
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("添加员工失败", e);
+            return Result.error(ResultCode.ERROR, "添加失败：" + e.getMessage());
+        }}
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Integer id) {
         try {
-            // 先检查是否存在
-            Employee employee = employeeService.getById(id);
-            if (employee == null) {
-                return Result.error(ResultCode.NOT_FOUND, "员工不存在");
-            }
-
-            boolean removed = employeeService.removeById(id);
-            if (removed) {
-                return Result.success();
-            } else {
-                log.error("删除员工失败，ID: {}", id);
-                return Result.error(ResultCode.ERROR, "删除失败");
-            }
+            employeeService.deleteEmployee(id);
+            return Result.success();
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.NOT_FOUND, e.getMessage());
         } catch (Exception e) {
-            log.error("删除员工异常，ID: {}", id, e);
+            log.error("删除员工失败，ID: {}", id, e);
             return Result.error(ResultCode.ERROR, "删除失败：" + e.getMessage());
         }
     }
 
     @PutMapping
-    public Result<EmployeeVO> update(@RequestBody Employee employee) {
-        if (employee.getId() == null) {
-            return Result.error(ResultCode.BAD_REQUEST, "员工ID不能为空");
+    public Result<EmployeeVO> update(@RequestBody EmployeeVO employeeVO) {
+        try {
+            EmployeeVO result = employeeService.updateEmployee(employeeVO);
+            return Result.success(result);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("更新员工失败", e);
+            return Result.error(ResultCode.ERROR, "更新失败：" + e.getMessage());
         }
-        return employeeService.updateById(employee) ? Result.success(employeeService.convertToVO(employee)) : Result.error(ResultCode.ERROR, "更新失败");
     }
 
     @GetMapping("/{id}")
     public Result<EmployeeVO> getById(@PathVariable Integer id) {
-        Employee employee = employeeService.getById(id);
-        if (employee == null) {
-            return Result.error(ResultCode.NOT_FOUND, "员工不存在");
+        try {
+            EmployeeVO employee = employeeService.getEmployeeById(id);
+            return Result.success(employee);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            log.error("查询员工失败，ID: {}", id, e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
-        return employeeService.getById(id) == null ? Result.error(ResultCode.ERROR, "查询失败") : Result.success(employeeService.convertToVO(employeeService.getById(id)));
     }
 
     @GetMapping("/emp")
     public Result<EmployeeVO> getByEmpNo(@RequestParam String empNo) {
-        Employee employee = employeeService.getByEmpNo(empNo);
-        if (employee == null) {
-            return Result.error(ResultCode.NOT_FOUND, "员工不存在");
+        try {
+            EmployeeVO employee = employeeService.getEmployeeByEmpNo(empNo);
+            return Result.success(employee);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            log.error("查询员工失败，empNo: {}", empNo, e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
-        return employeeService.getByEmpNo(empNo) == null ? Result.error(ResultCode.ERROR, "查询失败") : Result.success(employeeService.convertToVO(employeeService.getByEmpNo(empNo)));
     }
 
     @GetMapping("/name")
     public Result<EmployeeVO> getByName(@RequestParam String name) {
-        Employee employee = employeeService.getByName(name);
-        if (employee == null) {
-            return Result.error(ResultCode.NOT_FOUND, "员工不存在");
+        try {
+            EmployeeVO employee = employeeService.getEmployeeByName(name);
+            return Result.success(employee);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            log.error("查询员工失败，name: {}", name, e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
-        return employeeService.getByName(name) == null ? Result.error(ResultCode.ERROR, "查询失败") : Result.success(employeeService.convertToVO(employeeService.getByName(name)));
     }
 
     @GetMapping("/page")
@@ -104,43 +110,32 @@ public class EmployeeController {
                                          @RequestParam(required = false) String department,
                                          @RequestParam(required = false) String position) {
         try {
-            if (pageNum == null || pageNum <= 0) return Result.error(ResultCode.BAD_REQUEST, "页码不能小于1");
-            if (pageSize == null || pageSize <= 0) return Result.error(ResultCode.BAD_REQUEST, "页大小不能小于1");
-            if (pageSize > 100) return Result.error(ResultCode.BAD_REQUEST, "页大小不能大于100");
-            if (pageNum > 10000) return Result.error(ResultCode.BAD_REQUEST, "页码不能大于10000");
-            //查询条件（可选）
-            LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
-            if (StringUtils.hasText(department)) queryWrapper.eq(Employee::getDepartment, department);
-            if (StringUtils.hasText(position)) queryWrapper.eq(Employee::getPosition, position);
-            //分页查询
-            Page<Employee> page = employeeService.pageEmployees(pageNum, pageSize);
-            Page<Employee> employeePage = employeeMapper.selectPage(page, queryWrapper);
-            if (pageNum > page.getPages() && page.getTotal() > 0)
-                return Result.error(ResultCode.NOT_FOUND, "页码超出范围，没有更多数据");
-            return Result.success(employeeService.convertToVOPage(employeePage));
+            Page<EmployeeVO> result = employeeService.pageEmployees(pageNum, pageSize, department, position);
+            return Result.success(result);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("分页查询失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
-
-
     }
     //导入员工数据
     @PostMapping("/import")
     public Result<Void> importExcel(@RequestParam("file") MultipartFile file) {
-       try {
-           String error = employeeService.importExcel( file);
-           return error == null ? Result.success() : Result.error(ResultCode.ERROR, error);
-       } catch (Exception e) {
-           log.error("导入员工数据异常", e);
-           return Result.error(ResultCode.ERROR, "导入失败：" + e.getMessage());
-       }
+        try {
+            String error = employeeService.importExcel(file);
+            return error == null ? Result.success() : Result.error(ResultCode.ERROR, error);
+        } catch (Exception e) {
+            log.error("导入员工数据异常", e);
+            return Result.error(ResultCode.ERROR, "导入失败：" + e.getMessage());
+        }
     }
 
     @GetMapping("/export")
     public void exportEmployees(HttpServletResponse response) {
         try {
-            List<Employee> employees = employeeService.list();
-            List<EmployeeExcel> employeeExcels = employeeService.convertTOExcelList(employees);
+            List<EmployeeVO> employees = employeeService.getAllEmployees();
+            List<EmployeeExcel> employeeExcels = employeeService.convertToExcelList(employees);
             //设置响应头
 
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

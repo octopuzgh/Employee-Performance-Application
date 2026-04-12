@@ -21,100 +21,106 @@ public class AnalysisController {
     private AnalysisService analysisService;
     @GetMapping("/departmentRank")
     public Result<List<DepartmentRankVO>> getDepartmentRank(@RequestParam Integer year, @RequestParam Integer quarter) {
-        log.info("开始查询部门排名... year = {},quarter={}", year, quarter);
-        //季度必须在1-4之间
-        if (quarter < 1 || quarter > 4) {
-            return Result.error(ResultCode.BAD_REQUEST, "季度必须在1-4之间");
+        try {
+            List<DepartmentRankVO> result = analysisService.getDepartmentRankVO(year, quarter);
+            log.info("查询部门排名成功, year={}, quarter={}", year, quarter);
+            return Result.success(result);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("查询部门排名失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
-        //处理查询失败或查询结果为空的情况
-        try{
-            List<DepartmentRankVO> departmentRank= analysisService.getDepartmentRankVO(year, quarter);
-            return departmentRank.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "第"+year+"年的第"+quarter+"季度没有绩效数据") : Result.success(departmentRank);
-        }catch (Exception e){
-            log.error("查询失败", e);
-            return Result.error(ResultCode.ERROR, "查询失败"+e.getMessage());
-        }
-
     }
 
     @GetMapping("/employeeTrend")
     public Result<List<EmployeeTrendVO>> getEmployeeTrend(@RequestParam String empNo) {
-        log.info("开始查询员工趋势... empNo = {}", empNo);
         try {
-            List<EmployeeTrendVO> employeeTrend = analysisService.getEmployeeTrendVO(empNo);
-            return employeeTrend.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有该员工的绩效数据") : Result.success(employeeTrend);
+            List<EmployeeTrendVO> result = analysisService.getEmployeeTrendVO(empNo);
+            log.info("查询员工趋势成功, empNo={}", empNo);
+            return Result.success(result);
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询员工趋势失败, empNo={}", empNo, e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
 
     @GetMapping("/departmentAvgScore")
-    public Result<DepartmentAvgScoreVO> getDepartmentAvgScore(@RequestParam Integer year, @RequestParam Integer quarter, @RequestParam String department) {
-        log.info("开始查询部门平均分... year = {},quarter={},department={}", year, quarter, department);
+    public Result<DepartmentAvgScoreVO> getDepartmentAvgScore(
+            @RequestParam Integer year,
+            @RequestParam Integer quarter,
+            @RequestParam String department) {
         try {
-            if (quarter < 1 || quarter > 4) {
-                return Result.error(ResultCode.BAD_REQUEST, "季度必须在1-4之间");
-            }
-            DepartmentAvgScoreVO departmentAvgScore = analysisService.getDepartmentAvgScore(year, quarter, department);
-            return departmentAvgScore == null ? Result.error(ResultCode.NOT_FOUND, "没有该部门的绩效数据") : Result.success(departmentAvgScore);
+            DepartmentAvgScoreVO result = analysisService.getDepartmentAvgScore(year, quarter, department);
+            log.info("查询部门平均分成功, year={}, quarter={}, department={}", year, quarter, department);
+            return result == null ? Result.error(ResultCode.NOT_FOUND, "没有该部门的绩效数据") : Result.success(result);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询部门平均分失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
     @GetMapping("/companyAvgScore")
     public Result<CompanyAvgScoreVO> getCompanyAvgScore(@RequestParam Integer year, @RequestParam Integer quarter) {
-        log.info("开始查询公司平均分... year = {},quarter={}", year, quarter);
-        try{
-            if(quarter < 1 || quarter > 4){
-                return Result.error(ResultCode.BAD_REQUEST, "季度必须在1-4之间");
-            }
-            CompanyAvgScoreVO companyAvgScore = analysisService.getCompanyAvgScore(year, quarter);
-            return companyAvgScore == null ? Result.error(ResultCode.NOT_FOUND, "没有该公司的绩效数据") : Result.success(companyAvgScore);
-        }catch (Exception e){
-            return Result.error(ResultCode.ERROR, "查询失败"+e.getMessage());
+        try {
+            CompanyAvgScoreVO result = analysisService.getCompanyAvgScore(year, quarter);
+            log.info("查询公司平均分成功, year={}, quarter={}", year, quarter);
+            return result == null ? Result.error(ResultCode.NOT_FOUND, "没有该公司的绩效数据") : Result.success(result);
+        } catch (IllegalArgumentException e) {
+            return Result.error(ResultCode.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            log.error("查询公司平均分失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
     @GetMapping("/departmentStats")
     public Result<List<DepartmentStatsVO>> getDepartmentStats() {
-        log.info("开始查询部门统计...");
         try {
-            List<DepartmentStatsVO> departmentStats = analysisService.getDepartmentStats();
-            return departmentStats.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有部门统计数据") : Result.success(departmentStats);
+            List<DepartmentStatsVO> result = analysisService.getDepartmentStats();
+            log.info("查询部门统计成功");
+            return Result.success(result);
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询部门统计失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
+
     @GetMapping("/employeeRank")
     public Result<List<EmployeeRankVO>> getEmployeeRank(@RequestParam(defaultValue = "10") Integer topN) {
-        log.info( "开始查询员工排名... topN = {}", topN);
         try {
-            List<EmployeeRankVO> employeeRank = analysisService.getEmployeeRank(topN);
-            return employeeRank.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有员工排名数据") : Result.success(employeeRank);
+            List<EmployeeRankVO> result = analysisService.getEmployeeRank(topN);
+            log.info("查询员工排名成功, topN={}", topN);
+            return Result.success(result);
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询员工排名失败, topN={}", topN, e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
     @GetMapping("/companySummary")
     public Result<CompanySummaryVO> getCompanySummary(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer quarter) {
-
-        log.info("开始查询公司总览... year = {},quarter = {}", year, quarter);
         try {
-            CompanySummaryVO companySummary = analysisService.getCompanySummary(year,quarter);
-            return companySummary == null ? Result.error(ResultCode.NOT_FOUND, "没有公司总览数据") : Result.success(companySummary);
+            CompanySummaryVO result = analysisService.getCompanySummary(year, quarter);
+            log.info("查询公司摘要成功, year={}, quarter={}", year, quarter);
+            return result == null ? Result.error(ResultCode.NOT_FOUND, "没有公司摘要数据") : Result.success(result);
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询公司摘要失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
+
     @GetMapping("/anomalyDetect")
-    public Result<List<AnomalyDetectVO>> getAnomalyDetect(@RequestParam BigDecimal threshold) {
-        log.info("开始查询异常检测... threshold = {}", threshold);
+    public Result<List<AnomalyDetectVO>> getAnomalyDetect(
+            @RequestParam(required = false) BigDecimal threshold) {
         try {
-            List<AnomalyDetectVO> anomalyDetect = analysisService.getAnomalyDetect(threshold);
-            return anomalyDetect.isEmpty() ? Result.error(ResultCode.NOT_FOUND, "没有异常检测数据") : Result.success(anomalyDetect);
+            List<AnomalyDetectVO> result = analysisService.getAnomalyDetect(threshold);
+            log.info("查询异常检测成功, threshold={}", threshold);
+            return Result.success(result);
         } catch (Exception e) {
-            return Result.error(ResultCode.ERROR, "查询失败" + e.getMessage());
+            log.error("查询异常检测失败", e);
+            return Result.error(ResultCode.ERROR, "查询失败：" + e.getMessage());
         }
     }
 

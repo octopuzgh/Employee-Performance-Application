@@ -33,3 +33,9 @@
 2026-04-11 19:06:59,166 - INFO - 执行统计任务: anomaly_detect
 2026-04-11 19:07:06,852 - INFO - 统计任务完成: anomaly_detect
 2026-04-11 19:07:06,853 - INFO - Closing down clientserver connection
+2026-04-12 14:22:11,777 - INFO - 执行统计任务: company_summary
+2026-04-12 14:22:25,733 - INFO - 统计任务完成: company_summary
+2026-04-12 14:22:25,733 - INFO - Closing down clientserver connection
+2026-04-12 14:23:14,877 - INFO - 执行统计任务: emp_rank
+2026-04-12 14:23:22,736 - INFO - 统计任务完成: emp_rank
+2026-04-12 14:23:22,737 - INFO - Closing down clientserver connection

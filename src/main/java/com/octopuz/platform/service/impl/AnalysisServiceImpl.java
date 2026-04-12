@@ -90,11 +90,14 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //        }
 //        return result;
 //    }
-    @Cacheable(value = "analysis:dept-avg",
-                key = "#year+'-'+#quarter")
+
     @Override
     public DepartmentAvgScoreVO getDepartmentAvgScore(Integer year, Integer quarter, String department) {
+        if (quarter == null || quarter < 1 || quarter > 4) {
+            throw new IllegalArgumentException("季度必须在1-4之间");
+        }
         try {
+
             String jsonResult = pythonScriptExecutor.execute("dept_avg",
                     String.valueOf(year), String.valueOf(quarter), department);
 
@@ -129,10 +132,12 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //        return avgScore.divide(new BigDecimal(performances.size()), 2, RoundingMode.HALF_UP);
 //    }
 
-    @Cacheable(value = "analysis:company-avg",
-                key = "#year+'-'+#quarter")
+
     @Override
     public CompanyAvgScoreVO getCompanyAvgScore(Integer year, Integer quarter) {
+        if (quarter == null || quarter < 1 || quarter > 4) {
+            throw new IllegalArgumentException("季度必须在1-4之间");
+        }
         try {
             String jsonResult = pythonScriptExecutor.execute("company_avg",
                     String.valueOf(year), String.valueOf(quarter));
@@ -156,10 +161,13 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //    }
 
 
-    @Cacheable(value = "analysis:rank",
-            key = "#year+'-'+#quarter")
+
     @Override
     public List<DepartmentRankVO> getDepartmentRankVO(Integer year, Integer quarter) {
+        //检查参数
+        if (quarter == null || quarter < 1 || quarter > 4) {
+            throw new IllegalArgumentException("季度必须在1-4之间");
+        }
         try {
             String jsonResult = pythonScriptExecutor.execute("dept_rank",
                     String.valueOf(year), String.valueOf(quarter));
@@ -185,8 +193,7 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 //    }
 
 
-    @Cacheable(value = "analysis:trend",
-            key = "#empNo")
+
     @Override
     public List<EmployeeTrendVO> getEmployeeTrendVO(String empNo) {
         try {
@@ -221,25 +228,23 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     @Cacheable(value = "analysis:dept-stats")
     public List<DepartmentStatsVO> getDepartmentStats() {
         try {
-            log.info("开始调用 Python 脚本: dept_stats");
+
             String jsonResult = pythonScriptExecutor.execute("dept_stats");
-            log.info("Python 脚本返回长度: {}", jsonResult.length());
+
 
             String cleanedJson = pythonScriptExecutor.extractJson(jsonResult);
-            log.info("清理后 JSON: {}", cleanedJson.substring(0, Math.min(100, cleanedJson.length())));
 
             List<DepartmentStatsVO> result = JSON.parseArray(cleanedJson, DepartmentStatsVO.class);
-            log.info("解析成功，数据条数: {}", result.size());
 
             return result;
         } catch (Exception e) {
             log.error("dept_stats.py脚本执行错误", e);
-            return null;
+            throw new RuntimeException("dept_stats.py脚本执行错误: " + e.getMessage(), e);
+
         }
     }
 
     @Override
-    @Cacheable(value = "analysis:emp-rank")
     public List<EmployeeRankVO> getEmployeeRank(Integer topN) {
         try {
             if(topN == null || topN <= 0){
@@ -256,7 +261,6 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     }
 
     @Override
-    @Cacheable(value = "analysis:company-summary", key = "(#year ?: 'all') + '-' + (#quarter ?: 'all')")
     public CompanySummaryVO getCompanySummary(Integer year,Integer quarter) {
         try {
             List<String> args = new ArrayList<>();
@@ -276,7 +280,6 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
     }
 
     @Override
-    @Cacheable(value = "analysis:anomaly-detect", key = "#threshold ?: '20'")
     public List<AnomalyDetectVO> getAnomalyDetect(BigDecimal threshold) {
         try {
             if (threshold == null) {

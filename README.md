@@ -1,5 +1,4 @@
-
-# 员工绩效平台（Employee Performance Platform）
+# 绩效数据分析平台（轻量级数据平台方向）
 
 <p align="center">
   <img src="https://img.shields.io/badge/Spring%20Boot-3.5.13-brightgreen" alt="Spring Boot">
@@ -12,25 +11,32 @@
 
 ## 📌 项目简介
 
-**员工绩效平台** 是一个企业级绩效管理系统，支持员工/绩效数据管理、Excel 批量导入导出、操作日志审计，并基于 **PySpark** 实现大数据量下的统计分析。项目采用 **Java + Python 混合架构**，业务层与计算层通过 SSH + JSON 解耦。
+**绩效数据分析平台** 是一个轻量级数据平台实践项目，覆盖 **数据接入 → 数据计算 → 数据服务** 的完整链路。
+
+- **数据接入**：Excel 批量导入、Kafka 异步日志
+- **数据计算**：PySpark 执行 Spark SQL 统计分析（窗口函数 RANK/LAG）
+- **数据服务**：Spring Boot 提供 REST API，Redis 缓存加速
+
+项目采用 **Java + Python 混合架构**，业务层与计算层通过 SSH + JSON 解耦。
 
 ---
 
 ## 🛠 技术框架
 
-| 类别 | 技术 | 版本 | 用途 |
-| :--- | :--- | :--- | :--- |
-| 核心框架 | Spring Boot | 3.5.13 | 应用基础框架 |
-| ORM 增强 | MyBatis-Plus | 3.5.15 | 简化 CRUD 操作 |
+| 类别 | 技术 | 版本          | 用途 |
+| :--- | :--- |:------------| :--- |
+| 核心框架 | Spring Boot | 3.5.13      | 应用基础框架 |
+| ORM 增强 | MyBatis-Plus | 3.5.15      | 简化 CRUD 操作 |
 | 对象转换 | MapStruct | 1.5.5.Final | VO ↔ Entity 编译期转换 |
-| 缓存 | Redis + Spring Cache | - | 统计接口结果缓存 |
-| 分布式锁 | Redisson | 3.24.3 | Excel 导入防并发 |
-| 消息队列 | Kafka | 3.x | 操作日志异步解耦 |
-| 大数据计算 | PySpark | 4.1.1 | 8 个 Spark SQL 统计接口 |
-| 跨语言通信 | JSch + SSH | 0.2.17 | Java 调用远程 Python |
-| JSON 解析 | Fastjson2 | 2.0.40 | 解析 PySpark 返回结果 |
-| Excel 处理 | EasyExcel | 3.3.2 | 批量导入导出 |
-| 数据库 | MySQL | 8.0 | 数据存储 |
+| 缓存 | Redis + Spring Cache | 3.5.10      | 统计接口结果缓存 |
+| 分布式锁 | Redisson | 3.24.3      | Excel 导入防并发 |
+| 消息队列 | Kafka | 3.x         | 操作日志异步解耦 |
+| 大数据计算 | PySpark | 4.1.1       | 8 个 Spark SQL 统计接口 |
+| 跨语言通信 | JSch + SSH | 0.2.17      | Java 调用远程 Python |
+| JSON 解析 | Fastjson2 | 2.0.40      | 解析 PySpark 返回结果 |
+| Excel 处理 | EasyExcel | 3.3.2       | 批量导入导出 |
+| 数据库 | MySQL | 8.0         | 数据存储 |
+| 容器化（可选） | Docker / Docker Compose | -           | 快速启动依赖服务 |
 
 ---
 
@@ -38,146 +44,103 @@
 
 <details>
 <summary>点击展开完整目录树</summary>
-
-```
-
 platform/
 ├── src/main/java/com/octopuz/platform/
-│   ├── controller/                    # REST API 控制器
-│   │   ├── AnalysisController.java      # 8 个统计接口
-│   │   ├── EmployeeController.java      # 员工 CRUD + 导入导出
-│   │   └── PerformanceController.java   # 绩效 CRUD + 导入导出
-│   │
-│   ├── service/                        # 业务逻辑层
-│   │   ├── interf/                       # 接口定义
-│   │   └── impl/                         # 实现类
-│   │
-│   ├── converter/                      # MapStruct 转换器
-│   │   ├── EmployeeConverter.java
-│   │   └── PerformanceConverter.java
-│   │
-│   ├── utils/                          # 工具类
-│   │   ├── PythonScriptExecutor.java     # 构建 SSH 命令
-│   │   ├── SshExecutor.java              # SSH 底层执行
-│   │   └── KafkaSender.java              # Kafka 消息发送
-│   │
-│   ├── config/                         # 配置类
-│   ├── consumer/                       # Kafka 消费者
-│   ├── handler/                        # MyBatis-Plus 自动填充
-│   ├── listener/                       # EasyExcel 监听器
-│   ├── entity/                         # 数据库实体
-│   ├── vo/                             # 视图对象（11 个）
-│   └── common/                         # 通用响应封装
+│ ├── controller/ # REST API 控制器
+│ │ ├── AnalysisController.java # 8 个统计接口
+│ │ ├── EmployeeController.java # 员工 CRUD + 导入导出
+│ │ └── PerformanceController.java # 绩效 CRUD + 导入导出
+│ │
+│ ├── service/ # 业务逻辑层
+│ │ ├── interf/ # 接口定义
+│ │ └── impl/ # 实现类
+│ │
+│ ├── converter/ # MapStruct 转换器
+│ │ ├── EmployeeConverter.java
+│ │ └── PerformanceConverter.java
+│ │
+│ ├── utils/ # 工具类
+│ │ ├── PythonScriptExecutor.java # 构建 SSH 命令
+│ │ ├── SshExecutor.java # SSH 底层执行
+│ │ └── KafkaSender.java # Kafka 消息发送
+│ │
+│ ├── config/ # 配置类
+│ ├── consumer/ # Kafka 消费者
+│ ├── handler/ # MyBatis-Plus 自动填充
+│ ├── listener/ # EasyExcel 监听器
+│ ├── entity/ # 数据库实体
+│ ├── vo/ # 视图对象（11 个）
+│ └── common/ # 通用响应封装
 │
-├── scripts/                            # PySpark 脚本目录
-│   ├── main.py                           # 统一入口（路由分发）
-│   ├── common/                           # 公共模块
-│   │   ├── db_utils.py                     # MySQL 读取
-│   │   └── spark_utils.py                  # Spark Session 创建
-│   ├── config/                           # 配置模块
-│   │   └── settings.py                     # 数据库/Spark 配置
-│   ├── statistics/                       # 8 个统计脚本
-│   │   ├── dept_rank.py                    # 部门排名（RANK 窗口函数）
-│   │   ├── emp_rank.py                     # 员工排名
-│   │   ├── emp_trend.py                    # 员工趋势（LAG 窗口函数）
-│   │   ├── dept_stats.py                   # 部门统计
-│   │   ├── company_summary.py              # 公司摘要
-│   │   └── anomaly_detect.py               # 异常检测（LAG 窗口函数）
-│   └── logs/                             # 运行日志
+├── scripts/ # PySpark 脚本目录
+│ ├── main.py # 统一入口（路由分发）
+│ ├── common/ # 公共模块
+│ │ ├── db_utils.py # MySQL 读取
+│ │ └── spark_utils.py # Spark Session 创建
+│ ├── config/ # 配置模块
+│ │ └── settings.py # 数据库/Spark 配置
+│ ├── statistics/ # 8 个统计脚本
+│ │ ├── dept_rank.py # 部门排名（RANK 窗口函数）
+│ │ ├── emp_rank.py # 员工排名
+│ │ ├── emp_trend.py # 员工趋势（LAG 窗口函数）
+│ │ ├── dept_stats.py # 部门统计
+│ │ ├── company_summary.py # 公司摘要
+│ │ └── anomaly_detect.py # 异常检测（LAG 窗口函数）
+│ └── logs/ # 运行日志
 │
+├── docker-compose.yml # Docker 快速启动配置（可选）
 └── pom.xml
 
-```
+text
 
 </details>
 
 ---
 
-## 🔄 核心架构链路
+## 🔄 数据平台链路
 
-### 链路一：普通业务（员工/绩效 CRUD）
+### 链路一：数据接入
+Excel 上传 / 业务操作
+↓
+Kafka 异步日志（解耦、削峰）
+↓
+操作日志写入 MySQL
 
-```
+text
 
-前端请求
-↓
-Controller
-↓
-Service（MapStruct: VO → Entity）
-↓
-MyBatis-Plus Mapper
-↓
-MySQL
-↓
-KafkaSender（异步发送操作日志）
-↓
-返回前端
-
-```
-
-**涉及技术**：Spring Boot + MyBatis-Plus + MapStruct + Kafka
+**涉及技术**：EasyExcel + Kafka
 
 ---
 
-### 链路二：Excel 批量导入（分布式锁）
-
-```
-
-上传 Excel
-↓
-Redisson 分布式锁（tryLock 防并发）
-↓
-EasyExcel 流式解析（避免 OOM）
-↓
-数据校验 + 批量保存（MyBatis-Plus saveBatch）
-↓
-Kafka 记录导入日志
-↓
-释放锁 → 返回结果
-
-```
-
-**涉及技术**：Redisson + EasyExcel + Kafka
-
----
-
-### 链路三：统计分析（Java + PySpark 混合架构）
-
-```
-
+### 链路二：数据计算（Spark SQL）
 前端请求统计接口
 ↓
 Redis 缓存命中 → 直接返回（~20-50ms）
 ↓（未命中）
-AnalysisServiceImpl
-↓
-PythonScriptExecutor.execute(statType, args)
-├── 构建命令: cd /path && python3 main.py dept_rank 2024 1
-└── 调用 SshExecutor
-↓
-JSch SSH 连接 Linux
-↓
-Linux 执行 main.py → 路由到 statistics/*.py
+SSH 调用 Linux 虚拟机
 ↓
 PySpark 读取 MySQL → Spark SQL 统计
 ├── 窗口函数（RANK / LAG）
 └── Catalyst 优化器自动优化
 ↓
-输出 JSON 到 stdout
-↓
-SshExecutor 捕获 stdout
-↓
-PythonScriptExecutor.extractJson() 清理日志前缀
+JSON 返回 → 存入 Redis
+
+text
+
+**涉及技术**：JSch + SSH + PySpark + Spark SQL
+
+---
+
+### 链路三：数据服务
+统计结果 JSON
 ↓
 Fastjson2 解析为 VO
 ↓
-@Cacheable 存入 Redis
-↓
-返回前端
+REST API 返回前端
 
-```
+text
 
-**涉及技术**：JSch + SSH + PySpark + Spark SQL + Fastjson2 + Redis
+**涉及技术**：Spring Boot + Fastjson2
 
 ---
 
@@ -213,8 +176,7 @@ Fastjson2 解析为 VO
 ### 📌 关键发现
 
 - **PySpark 冷启动是主要瓶颈**（10-11 秒），但缓存命中后性能极佳（20-50 毫秒）
-- **普通 CRUD 首次慢（100ms）**，后续降至 8ms——MyBatis-Plus + MySQL 连接池 + 索引生效
-- **缓存命中率**：统计接口依赖业务场景，相同参数重复查询越多，命中率越高
+- **普通 CRUD 首次慢（100ms）**，后续降至 8ms——连接池 + 索引生效
 
 ---
 
@@ -225,7 +187,7 @@ Fastjson2 解析为 VO
 | **Java + PySpark 混合架构** | 业务层用 Java，计算层用 Spark，解耦且可独立扩展 |
 | **SSH + JSON 通信** | 简单直接，无需额外服务，适合跨语言调用 |
 | **MapStruct 对象转换** | 编译期生成代码，比 BeanUtils 快 10 倍以上 |
-| **Redisson 分布式锁** | Excel 导入时防并发，tryLock + leaseTime 双重保护 |
+| **Redisson 分布式锁** | Excel 导入时防并发，tryLock + finally 双重保护 |
 | **Kafka 异步日志** | 操作日志异步写入，手动 ack 保证不丢消息 |
 | **Redis 缓存** | 统计接口命中后响应时间从 10 秒降到 20-50 毫秒 |
 | **窗口函数优先** | `RANK()` 处理同分排名，`LAG()` 计算环比，避免自连接 |
@@ -238,55 +200,52 @@ Fastjson2 解析为 VO
 
 - JDK 17+
 - Maven 3.8+
-- MySQL 8.0
-- Redis 6.x
-- Kafka 3.x
 - Python 3.10+（PySpark 4.1.1）
-- Linux 虚拟机（用于运行 PySpark）
+- Linux 虚拟机（用于运行 PySpark 和依赖服务）
 
-### 运行 Java 端
+### 方式一：传统部署（推荐）
+
+所有服务（MySQL、Redis、Kafka、Spark）部署在 Linux 虚拟机中，Spring Boot 在 Windows/Linux 运行。
 
 ```bash
-git clone (https://github.com/octopuzgh/Employee-Performance-Application.git)
-cd 项目名
-# 配置 application.yml（数据库、Redis、Kafka、SSH）
+# 1. 克隆项目
+git clone https://github.com/octopuzgh/Employee-Performance-Application.git
+cd Employee-Performance-Application
+
+# 2. 配置 application.yml（数据库、Redis、Kafka、SSH）
+
+# 3. 启动 Spring Boot
 mvn spring-boot:run
-```
 
-运行 PySpark 脚本（Linux）
-
-```bash
+# 4. 在 Linux 虚拟机中运行 PySpark 脚本
 cd /path/to/scripts
 python3 main.py dept_rank 2024 1
-# 输出示例: [{"department":"技术部","avgScore":88.5}]
-```
+方式二：Docker 快速启动（可选）
+项目提供了 docker-compose.yml，可一键启动 MySQL、Redis、Kafka 等依赖服务，适合快速体验。
 
----
+bash
+# 启动所有依赖服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+注意：Spark 计算引擎仍需在 Linux 虚拟机中运行，Docker 仅用于快速启动辅助服务。
 
 📌 后续优化计划
+全局异常处理（@RestControllerAdvice）
 
-· 全局异常处理（@RestControllerAdvice）
-· 缓存 TTL 配置 + 精细清除
-· PySpark 预热缓存（避免首次冷启动）
-· 集成 Swagger 接口文档
-· 密码加密（Jasypt 或环境变量）
+缓存 TTL 配置 + 精细清除
 
----
+PySpark 预热缓存（避免首次冷启动）
+
+集成 Swagger 接口文档
+
+密码加密（Jasypt 或环境变量）
 
 📄 许可证
-
 MIT
 
----
-
 🙋 作者
-
 octopuz · GitHub
 
----
-
-<p align="center">
-  <sub>Built with ☕ by octopuz</sub>
-</p>
-```
-
+<p align="center"> <sub>Built with ☕ by octopuz</sub> </p> ```

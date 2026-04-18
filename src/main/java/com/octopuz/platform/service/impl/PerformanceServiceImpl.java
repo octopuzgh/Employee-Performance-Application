@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 
@@ -195,7 +196,7 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
 
             String lockKey = "lock:import-excel-lock:performance";
             RLock lock = redissonClient.getLock(lockKey);
-            boolean isLocked = lock.tryLock();
+            boolean isLocked = lock.tryLock(0, 300, TimeUnit.SECONDS);
             if (!isLocked) {
                 return "请勿重复导入";
             }

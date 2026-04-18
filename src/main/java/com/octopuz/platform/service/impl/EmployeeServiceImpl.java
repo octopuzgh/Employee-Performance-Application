@@ -197,7 +197,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
             //生成锁key,使用uuid利于处理高并发
             String lockKey = "lock:import-excel-lock:employee";
             RLock lock = redissonClient.getLock(lockKey);
-            boolean isLocked = lock.tryLock(0,-1, TimeUnit.SECONDS);
+            boolean isLocked = lock.tryLock(0, 300, TimeUnit.SECONDS);
             if(!isLocked){
                 return "请勿重复导入";
             }

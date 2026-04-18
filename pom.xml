@@ -118,7 +118,8 @@
             <artifactId>jsch</artifactId>
             <version>0.2.17</version>
         </dependency>
-        <!-- MapStruct -->
+        <!-- MapStruct（编译时生成代码） -->
+
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>

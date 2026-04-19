@@ -105,3 +105,19 @@ class CustomJSONEncoder(json.JSONEncoder):
 **原因**：MyBatis-Plus 首次加载映射、MySQL 连接池初始化、热点索引第一次加载。
 
 **解决**：正常现象，无需处理。连接池和索引预热后自动优化。
+
+## 7. Mybatis-Plus 的分页插件找不到
+
+**现象**：启动报错 `No qualifying bean of type 'com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor' available: expected at
+
+**原因**：Mybatis-Plus 3.0.7.1 升级到 3.1.0 后，分页插件包名发生改变。
+
+**解决**：去官网按照指导导入JSqlParser
+
+## 8. lombok 注解不生效
+
+**现象**：lombok 注解不生效，如 @Data、@Builder、@AllArgsConstructor 等。
+
+**原因**：lombok 注解路径错误，idea找不到
+
+**解决**：临时解决：用maven clean 后 compile 永久解决：pom中显式指定lombok 的版本

@@ -6,10 +6,10 @@
   <img src="https://img.shields.io/badge/MyBatis--Plus-3.5.15-blue" alt="MyBatis-Plus">
   <img src="https://img.shields.io/badge/PySpark-4.1.1-orange" alt="PySpark">
   <img src="https://img.shields.io/badge/Kafka-3.x-black" alt="Kafka">
-  <img src="https://img.shields.io/badge/Redis-7.x-red" alt="Redis">
+  <img src="https://img.shields.io/badge/Redis-6.x-red" alt="Redis">
+  <img src="https://img.shields.io/badge/MySQL-8.0-pink" alt="MySQL">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
-
 ## 📌 项目简介
 
 **绩效数据分析平台** 是一个轻量级数据平台实践项目，覆盖 **数据接入 → 数据计算 → 数据服务** 的完整链路。
@@ -24,20 +24,20 @@
 
 ## 🛠 技术框架
 
-| 类别 | 技术 | 版本 | 用途 |
-| :--- | :--- | :--- | :--- |
-| 核心框架 | Spring Boot | 3.5.13 | 应用基础框架 |
-| ORM 增强 | MyBatis-Plus | 3.5.15 | 简化 CRUD 操作 |
+| 类别 | 技术 | 版本          | 用途 |
+| :--- | :--- |:------------| :--- |
+| 核心框架 | Spring Boot | 3.5.13      | 应用基础框架 |
+| ORM 增强 | MyBatis-Plus | 3.5.15      | 简化 CRUD 操作 |
 | 对象转换 | MapStruct | 1.5.5.Final | VO ↔ Entity 编译期转换 |
-| 缓存 | Redis + Spring Cache | 3.5.10 | 统计接口结果缓存 |
-| 分布式锁 | Redisson | 3.24.3 | Excel 导入防并发 |
-| 消息队列 | Kafka | 3.x | 操作日志异步解耦 |
-| 大数据计算 | PySpark | 4.1.1 | 8 个 Spark SQL 统计接口 |
-| 跨语言通信 | JSch + SSH | 0.2.17 | Java 调用远程 Python |
-| JSON 解析 | Fastjson2 | 2.0.40 | 解析 PySpark 返回结果 |
-| Excel 处理 | EasyExcel | 3.3.2 | 批量导入导出 |
-| 数据库 | MySQL | 8.0 | 数据存储 |
-| 容器化（可选） | Docker / Docker Compose | - | 快速启动依赖服务 |
+| 缓存 | Redis + Spring Cache | 6.x         | 统计接口结果缓存 |
+| 分布式锁 | Redisson | 3.24.3      | Excel 导入防并发 |
+| 消息队列 | Kafka | 3.x         | 操作日志异步解耦 |
+| 大数据计算 | PySpark | 4.1.1       | 8 个 Spark SQL 统计接口 |
+| 跨语言通信 | JSch + SSH | 0.2.17      | Java 调用远程 Python |
+| JSON 解析 | Fastjson2 | 2.0.40      | 解析 PySpark 返回结果 |
+| Excel 处理 | EasyExcel | 3.3.2       | 批量导入导出 |
+| 数据库 | MySQL | 8.0         | 数据存储 |
+| 容器化（可选） | Docker / Docker Compose | -           | 快速启动依赖服务 |
 
 ---
 
@@ -65,7 +65,8 @@ platform/
 │ ├── utils/ # 工具类
 │ │ ├── PythonScriptExecutor.java # 构建 SSH 命令
 │ │ ├── SshExecutor.java # SSH 底层执行
-│ │ └── KafkaSender.java # Kafka 消息发送
+│ │ ├── KafkaSender.java # Kafka 消息发送
+│ │ └── UserContextUtil.java # 获得用户ip和信息
 │ │
 │ ├── config/ # 配置类
 │ ├── consumer/ # Kafka 消费者
@@ -290,7 +291,7 @@ docker-compose ps
 - [ ] PySpark 预热缓存（避免首次冷启动）
 - [ ] 集成 Swagger 接口文档
 - [ ] 密码加密（Jasypt 或环境变量）
-
+- [ ] 为SSH加连接池或使用http服务
 ---
 
 ## 📄 许可证

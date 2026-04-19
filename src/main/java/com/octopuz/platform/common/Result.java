@@ -2,6 +2,8 @@ package com.octopuz.platform.common;
 
 import lombok.Data;
 
+import static com.octopuz.platform.common.ResultCode.SUCCESS;
+
 @Data
 public class Result<T> {
     private Integer code;
@@ -10,7 +12,7 @@ public class Result<T> {
     //响应成功
     public static <T> Result<T> success(T data){
         Result<T> result = new Result<>();
-        result.setCode(200);
+        result.setCode(SUCCESS);
         result.setData(data);
         result.setMessage("操作成功");
         return result;

@@ -48,3 +48,27 @@
 2026-04-12 17:00:32,773 - INFO - 执行统计任务: anomaly_detect
 2026-04-12 17:00:41,670 - INFO - 统计任务完成: anomaly_detect
 2026-04-12 17:00:41,671 - INFO - Closing down clientserver connection
+2026-04-18 10:25:01,503 - INFO - 执行统计任务: company_summary
+2026-04-18 10:25:23,905 - INFO - 统计任务完成: company_summary
+2026-04-18 10:25:23,905 - INFO - Closing down clientserver connection
+2026-04-18 10:27:29,818 - INFO - 执行统计任务: emp_rank
+2026-04-18 10:27:42,113 - INFO - 统计任务完成: emp_rank
+2026-04-18 10:27:42,114 - INFO - Closing down clientserver connection
+2026-04-18 10:28:18,190 - INFO - 执行统计任务: emp_rank
+2026-04-18 10:28:30,262 - INFO - 统计任务完成: emp_rank
+2026-04-18 10:28:30,263 - INFO - Closing down clientserver connection
+2026-04-18 16:22:28,956 - INFO - 执行统计任务: dept_stats
+2026-04-18 16:22:43,551 - INFO - 统计任务完成: dept_stats
+2026-04-18 16:22:43,553 - INFO - Closing down clientserver connection
+2026-04-18 16:48:07,458 - INFO - 执行统计任务: emp_trend
+2026-04-18 16:48:22,919 - INFO - 统计任务完成: emp_trend
+2026-04-18 16:48:22,919 - INFO - Closing down clientserver connection
+2026-04-18 16:49:04,596 - INFO - 执行统计任务: company_summary
+2026-04-18 16:49:15,937 - INFO - 统计任务完成: company_summary
+2026-04-18 16:49:15,938 - INFO - Closing down clientserver connection
+2026-04-18 17:03:55,304 - INFO - 执行统计任务: anomaly_detect
+2026-04-18 17:04:06,976 - INFO - 统计任务完成: anomaly_detect
+2026-04-18 17:04:06,979 - INFO - Closing down clientserver connection
+2026-04-18 17:09:49,016 - INFO - 执行统计任务: emp_rank
+2026-04-18 17:09:57,643 - INFO - 统计任务完成: emp_rank
+2026-04-18 17:09:57,644 - INFO - Closing down clientserver connection

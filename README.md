@@ -1,3 +1,4 @@
+
 # 绩效数据分析平台（轻量级数据平台方向）
 
 <p align="center">
@@ -23,20 +24,20 @@
 
 ## 🛠 技术框架
 
-| 类别 | 技术 | 版本          | 用途 |
-| :--- | :--- |:------------| :--- |
-| 核心框架 | Spring Boot | 3.5.13      | 应用基础框架 |
-| ORM 增强 | MyBatis-Plus | 3.5.15      | 简化 CRUD 操作 |
+| 类别 | 技术 | 版本 | 用途 |
+| :--- | :--- | :--- | :--- |
+| 核心框架 | Spring Boot | 3.5.13 | 应用基础框架 |
+| ORM 增强 | MyBatis-Plus | 3.5.15 | 简化 CRUD 操作 |
 | 对象转换 | MapStruct | 1.5.5.Final | VO ↔ Entity 编译期转换 |
-| 缓存 | Redis + Spring Cache | 3.5.10      | 统计接口结果缓存 |
-| 分布式锁 | Redisson | 3.24.3      | Excel 导入防并发 |
-| 消息队列 | Kafka | 3.x         | 操作日志异步解耦 |
-| 大数据计算 | PySpark | 4.1.1       | 8 个 Spark SQL 统计接口 |
-| 跨语言通信 | JSch + SSH | 0.2.17      | Java 调用远程 Python |
-| JSON 解析 | Fastjson2 | 2.0.40      | 解析 PySpark 返回结果 |
-| Excel 处理 | EasyExcel | 3.3.2       | 批量导入导出 |
-| 数据库 | MySQL | 8.0         | 数据存储 |
-| 容器化（可选） | Docker / Docker Compose | -           | 快速启动依赖服务 |
+| 缓存 | Redis + Spring Cache | 3.5.10 | 统计接口结果缓存 |
+| 分布式锁 | Redisson | 3.24.3 | Excel 导入防并发 |
+| 消息队列 | Kafka | 3.x | 操作日志异步解耦 |
+| 大数据计算 | PySpark | 4.1.1 | 8 个 Spark SQL 统计接口 |
+| 跨语言通信 | JSch + SSH | 0.2.17 | Java 调用远程 Python |
+| JSON 解析 | Fastjson2 | 2.0.40 | 解析 PySpark 返回结果 |
+| Excel 处理 | EasyExcel | 3.3.2 | 批量导入导出 |
+| 数据库 | MySQL | 8.0 | 数据存储 |
+| 容器化（可选） | Docker / Docker Compose | - | 快速启动依赖服务 |
 
 ---
 
@@ -44,6 +45,8 @@
 
 <details>
 <summary>点击展开完整目录树</summary>
+
+```
 platform/
 ├── src/main/java/com/octopuz/platform/
 │ ├── controller/ # REST API 控制器
@@ -90,8 +93,7 @@ platform/
 │
 ├── docker-compose.yml # Docker 快速启动配置（可选）
 └── pom.xml
-
-text
+```
 
 </details>
 
@@ -99,20 +101,29 @@ text
 
 ## 🔄 数据平台链路
 
-### 链路一：数据接入
-Excel 上传 / 业务操作
-↓
-Kafka 异步日志（解耦、削峰）
-↓
-操作日志写入 MySQL
+### 链路一：数据接入（Excel 批量导入 + Kafka 日志）
 
-text
+```
+Excel 上传
+↓
+Redisson 分布式锁（防并发）
+↓
+EasyExcel 流式解析（避免 OOM）
+↓
+数据校验 + 批量保存（MyBatis-Plus saveBatch）
+↓
+Kafka 异步发送操作日志（解耦）
+↓
+返回导入结果
+```
 
-**涉及技术**：EasyExcel + Kafka
+**涉及技术**：EasyExcel + Redisson + MyBatis-Plus + Kafka
 
 ---
 
-### 链路二：数据计算（Spark SQL）
+### 链路二：数据计算（Spark SQL 统计分析）
+
+```
 前端请求统计接口
 ↓
 Redis 缓存命中 → 直接返回（~20-50ms）
@@ -124,23 +135,57 @@ PySpark 读取 MySQL → Spark SQL 统计
 └── Catalyst 优化器自动优化
 ↓
 JSON 返回 → 存入 Redis
+```
 
-text
-
-**涉及技术**：JSch + SSH + PySpark + Spark SQL
+**涉及技术**：JSch + SSH + PySpark + Spark SQL + Redis
 
 ---
 
-### 链路三：数据服务
-统计结果 JSON
-↓
-Fastjson2 解析为 VO
-↓
-REST API 返回前端
+### 链路三：数据服务（REST API + MapStruct 转换）
 
-text
+```
+统计结果 JSON / 数据库 Entity
+↓
+MapStruct 编译期转换（VO ↔ Entity）
+├── 比 BeanUtils 快 10 倍以上
+└── 类型安全，避免反射
+↓
+Fastjson2 解析 JSON
+↓
+Spring Boot REST API
+↓
+统一响应封装（Result + ResultCode）
+↓
+返回前端
+```
 
-**涉及技术**：Spring Boot + Fastjson2
+**涉及技术**：Spring Boot + MapStruct + Fastjson2
+
+---
+
+### 链路四：基础业务（员工/绩效 CRUD）
+
+```
+前端请求（增删改查）
+↓
+Controller 参数校验
+↓
+Service 业务逻辑
+↓
+MapStruct VO ↔ Entity 转换
+↓
+MyBatis-Plus Mapper（自动填充、逻辑删除）
+↓
+MySQL
+↓
+Kafka 异步记录操作日志
+↓
+返回前端
+```
+
+**涉及技术**：Spring Boot + MyBatis-Plus + MapStruct + Kafka
+
+> 虽然是数据平台项目，但完整保留了后端 CRUD 能力，体现全栈开发功底。
 
 ---
 
@@ -220,32 +265,46 @@ mvn spring-boot:run
 # 4. 在 Linux 虚拟机中运行 PySpark 脚本
 cd /path/to/scripts
 python3 main.py dept_rank 2024 1
-方式二：Docker 快速启动（可选）
-项目提供了 docker-compose.yml，可一键启动 MySQL、Redis、Kafka 等依赖服务，适合快速体验。
+```
 
-bash
+### 方式二：Docker 快速启动（可选）
+
+项目提供了 `docker-compose.yml`，可一键启动 MySQL、Redis、Kafka 等依赖服务，适合快速体验。
+
+```bash
 # 启动所有依赖服务
 docker-compose up -d
 
 # 查看服务状态
 docker-compose ps
-注意：Spark 计算引擎仍需在 Linux 虚拟机中运行，Docker 仅用于快速启动辅助服务。
+```
 
-📌 后续优化计划
-全局异常处理（@RestControllerAdvice）
+> **注意**：Spark 计算引擎仍需在 Linux 虚拟机中运行，Docker 仅用于快速启动辅助服务。
 
-缓存 TTL 配置 + 精细清除
+---
 
-PySpark 预热缓存（避免首次冷启动）
+## 📌 后续优化计划
 
-集成 Swagger 接口文档
+- [ ] 全局异常处理（`@RestControllerAdvice`）
+- [ ] 缓存 TTL 配置 + 精细清除
+- [ ] PySpark 预热缓存（避免首次冷启动）
+- [ ] 集成 Swagger 接口文档
+- [ ] 密码加密（Jasypt 或环境变量）
 
-密码加密（Jasypt 或环境变量）
+---
 
-📄 许可证
-MIT
+## 📄 许可证
 
-🙋 作者
-octopuz · GitHub
+[MIT](LICENSE)
 
-<p align="center"> <sub>Built with ☕ by octopuz</sub> </p> ```
+---
+
+## 🙋 作者
+
+**octopuz** · [GitHub](https://github.com/octopuzgh)
+
+---
+
+<p align="center">
+  <sub>Built with ☕ by octopuz</sub>
+</p>

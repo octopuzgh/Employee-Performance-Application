@@ -24,6 +24,10 @@ public class MybatisPlusConfig {
         return interceptor;
     }
 
+
+    /**
+     * 创建SqlSession，获得mapper代理对象，执行sql
+     */
     @Bean
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
         MybatisSqlSessionFactoryBean factoryBean = new MybatisSqlSessionFactoryBean();

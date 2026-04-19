@@ -30,4 +30,8 @@ public class EmployeeTrendVO {
     private BigDecimal growthRate;
     //趋势标识
     private TrendType trend;
+    public String getTrend() {
+        return trend != null ? trend.getMessage() : null;
+    }
+
 }

@@ -2,7 +2,6 @@ package com.octopuz.platform.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
 import java.math.BigDecimal;
 
 @Getter
@@ -17,26 +16,17 @@ public enum TrendType {
     private final String code;
     private final String message;
 
-    //获得枚举
-    public static TrendType getByCode(String code) {
-        for (TrendType value : values()) {
-            if (value.code.equals(code)) {
-                return value;
-            }
-        }
-        return null;
+    @Override
+    public String toString() {
+        return this.message;
     }
 
     //根据分数变化判断趋势
-    public static TrendType getTrendType(BigDecimal currentScore, BigDecimal prevScore) {
-        if (prevScore == null) return FIRST;
-        if (currentScore.compareTo(prevScore) > 0) {
-            return UP;
-        } else if (currentScore.compareTo(prevScore) < 0) {
-            return DOWN;
-        } else {
-            return STABLE;
-        }
+    public static TrendType fromGrowthRate(BigDecimal growthRate) {
+        if (growthRate == null) return FIRST;
+        if (growthRate.compareTo(BigDecimal.ZERO) > 0) return UP;
+        if (growthRate.compareTo(BigDecimal.ZERO) < 0) return DOWN;
+        return STABLE;
     }
 
 }

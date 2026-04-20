@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
     private PerformanceConverter performanceConverter;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public PerformanceVO addOrUpdatePerformance(PerformanceVO performanceVO) {
         //检查参数逻辑
         if (performanceVO.getQuarter() < 1 || performanceVO.getQuarter() > 4) {
@@ -80,6 +82,7 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
         return performanceConverter.toVO(performance);
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deletePerformance(Integer id) {
         //检查参数逻辑
         Performance performance = getById(id);
@@ -97,6 +100,7 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
                         performance.getEmpNo(), performance.getYear(), performance.getQuarter()));
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public PerformanceVO updatePerformance(PerformanceVO performanceVO) {
         //检查参数逻辑
         if (performanceVO.getId() == null) {
@@ -188,6 +192,7 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String importExcel(MultipartFile file) {
         try {
             if (file.isEmpty()) {

@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +35,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     private EmployeeConverter employeeConverter;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public EmployeeVO addEmployee(EmployeeVO employeeVO) {
         if (employeeVO.getId() != null) {
             throw new IllegalArgumentException("员工ID必须为空");
@@ -52,6 +54,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         return employeeConverter.toVO(employee);
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteEmployee(Integer id) {
         Employee employee = getById(id);
         if (employee == null) {
@@ -67,6 +70,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                 String.format("员工%s删除成功,工号为%s", employee.getName(), employee.getEmpNo()));
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public EmployeeVO updateEmployee(EmployeeVO employeeVO) {
         if (employeeVO.getId() == null) {
             throw new IllegalArgumentException("员工ID不能为空");
@@ -189,6 +193,7 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String importExcel(MultipartFile file){
         try {
             if (file.isEmpty()) {

@@ -22,9 +22,10 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     }
     @Override
     public void updateFill(MetaObject metaObject) {
-        log.info("开始插入填充...");
-        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime::now, LocalDateTime.class);
-        this.strictUpdateFill(metaObject, "updateTime", LocalDateTime::now, LocalDateTime.class);
+        log.info("开始更新填充...");
+        //使用setFieldValByName方法强制覆盖要更新字段
+        this.setFieldValByName("updatedAt", LocalDateTime.now(), metaObject);
+        this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
     }
 
 }

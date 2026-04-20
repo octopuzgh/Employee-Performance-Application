@@ -21,8 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -219,13 +222,10 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
                     return "导入失败";
                 }
 
-                boolean saved = saveBatch(listener.getPerformances());
-                if (!saved) {
-                    return "导入失败";
-                }
+                upsertPerformanceBatch(listener.getPerformances());
 
                 int size = listener.getPerformances().size();
-                log.info("导入成功,共导入{}条", size);
+                log.info("导入成功，共导入{}条", size);
                 kafkaSender.sendOperationLog("IMPORT_PERFORMANCE",
                         String.format("导入了%d条员工绩效数据", size));
                 return null;
@@ -238,6 +238,57 @@ public class PerformanceServiceImpl extends ServiceImpl<PerformanceMapper, Perfo
             log.error("导入失败", e);
             return "导入失败" + e.getMessage();
         }
+    }
+    /**
+     * 批量 Upsert：存在则更新，不存在则新增
+     * 基于 (emp_no, year, quarter) 联合唯一标识
+     */
+    private void upsertPerformanceBatch(List<Performance> performances) {
+        List<String> empNos = performances.stream().map(Performance::getEmpNo).distinct().toList();
+        List<Integer> years = performances.stream().map(Performance::getYear).distinct().toList();
+        List<Integer> quarters = performances.stream().map(Performance::getQuarter).distinct().toList();
+
+        LambdaQueryWrapper<Performance> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Performance::getEmpNo, empNos)
+                .in(Performance::getYear, years)
+                .in(Performance::getQuarter, quarters);
+        List<Performance> existingList = list(queryWrapper);
+
+        Map<String, Performance> existMap = existingList.stream()
+                .collect(Collectors.toMap(
+                        p -> p.getEmpNo() + "_" + p.getYear() + "_" + p.getQuarter(),
+                        p -> p
+                ));
+
+        List<Performance> insertList = new ArrayList<>();
+        List<Performance> updateList = new ArrayList<>();
+
+        for (Performance excelPerf : performances) {
+            String key = excelPerf.getEmpNo() + "_" + excelPerf.getYear() + "_" + excelPerf.getQuarter();
+            Performance dbPerf = existMap.get(key);
+
+            if (dbPerf != null) {
+                dbPerf.setScore(excelPerf.getScore());
+                updateList.add(dbPerf);
+            } else {
+                insertList.add(excelPerf);
+            }
+        }
+
+        int updateCount = 0;
+        if (!updateList.isEmpty()) {
+            updateBatchById(updateList);
+            updateCount = updateList.size();
+        }
+
+        int insertCount = 0;
+        if (!insertList.isEmpty()) {
+            saveBatch(insertList);
+            insertCount = insertList.size();
+        }
+
+        log.info("绩效导入处理完成：新增 {} 条，更新 {} 条", insertCount, updateCount);
+
     }
 
 }

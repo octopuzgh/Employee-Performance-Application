@@ -21,8 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -220,17 +224,14 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
                 if (excelListener.getEmployees().isEmpty()) {
                     return  "导入员工数据异常，请检查数据格式是否正确";
                 }
-                //保存
-                boolean saved = saveBatch(excelListener.getEmployees());
-                if(!saved){
-                    return "导入员工数据异常，请检查数据格式是否正确";
-                } else {
-                    int size = excelListener.getEmployees().size();
-                    log.info("导入员工数据成功,共导入{}条", size);
-                    kafkaSender.sendOperationLog("IMPORT_EXCEL_EMPLOYEES",
-                            "导入员工数据成功,共导入"+size+"条");
-                    return null;
-                }
+                upsertEmployeeBatch(excelListener.getEmployees());
+
+                int size = excelListener.getEmployees().size();
+                log.info("导入员工数据成功，共导入{}条", size);
+                kafkaSender.sendOperationLog("IMPORT_EXCEL_EMPLOYEES",
+                        "导入员工数据成功，共导入" + size + "条");
+                return null;
+
             } finally {
                 if(lock.isHeldByCurrentThread()){
                     lock.unlock();
@@ -240,5 +241,57 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
             log.error("导入员工数据异常：{}", e.getMessage());
             return  "导入员工数据异常" + e.getMessage();
         }
+    }
+    /**
+     * 批量 Upsert：存在则更新，不存在则新增
+     * 基于 (emp_no, hire_date) 联合唯一标识
+     */
+    private void upsertEmployeeBatch(List<Employee> employees) {
+        List<String> empNos = employees.stream().map(Employee::getEmpNo).distinct().toList();
+        List<LocalDate> hireDates = employees.stream().map(Employee::getHireDate).distinct().toList();
+
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Employee::getEmpNo, empNos)
+                .in(Employee::getHireDate, hireDates);
+        List<Employee> existingList = list(queryWrapper);
+
+        Map<String, Employee> existMap = existingList.stream()
+                .collect(Collectors.toMap(
+                        e -> e.getEmpNo() + "_" + e.getHireDate(),
+                        e -> e
+                ));
+
+        List<Employee> insertList = new ArrayList<>();
+        List<Employee> updateList = new ArrayList<>();
+
+        for (Employee excelEmp : employees) {
+            String key = excelEmp.getEmpNo() + "_" + excelEmp.getHireDate();
+            Employee dbEmp = existMap.get(key);
+
+            if (dbEmp != null) {
+                dbEmp.setDepartment(excelEmp.getDepartment());
+                dbEmp.setPosition(excelEmp.getPosition());
+                dbEmp.setEmail(excelEmp.getEmail());
+                dbEmp.setName(excelEmp.getName());
+                updateList.add(dbEmp);
+            } else {
+                insertList.add(excelEmp);
+            }
+        }
+
+        int updateCount = 0;
+        if (!updateList.isEmpty()) {
+            updateBatchById(updateList);
+            updateCount = updateList.size();
+        }
+
+        int insertCount = 0;
+        if (!insertList.isEmpty()) {
+            saveBatch(insertList);
+            insertCount = insertList.size();
+        }
+
+        log.info("员工导入处理完成：新增 {} 条，更新 {} 条", insertCount, updateCount);
+
     }
 }

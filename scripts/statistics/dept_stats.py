@@ -34,7 +34,8 @@ def run(*args):
         """
 
         result_df = spark.sql(sql)
-
+        # result_df = result_df.repartition(2,"department")
+        # print(f"分区数：{result_df.rdd.getNumPartitions()}", file=sys.stderr)
         return df_to_json(result_df)
 
     except Exception as e:

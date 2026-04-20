@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/MySQL-8.0-pink" alt="MySQL">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
+
 ## 📌 项目简介
 
 **绩效数据分析平台** 是一个轻量级数据平台实践项目，覆盖 **数据接入 → 数据计算 → 数据服务** 的完整链路。
@@ -37,7 +38,7 @@
 | JSON 解析 | Fastjson2 | 2.0.40      | 解析 PySpark 返回结果 |
 | Excel 处理 | EasyExcel | 3.3.2       | 批量导入导出 |
 | 数据库 | MySQL | 8.0         | 数据存储 |
-| 容器化（可选） | Docker / Docker Compose | -           | 快速启动依赖服务 |
+| 容器化（可选） | Docker / Docker Compose | 3.8         | 快速启动依赖服务 |
 
 ---
 
@@ -58,6 +59,7 @@ platform/
 │ │ ├── interf/ # 接口定义
 │ │ └── impl/ # 实现类
 │ │
+│ ├── mapper/ # 数据库映射,mp提供crud
 │ ├── converter/ # MapStruct 转换器
 │ │ ├── EmployeeConverter.java
 │ │ └── PerformanceConverter.java
@@ -65,17 +67,20 @@ platform/
 │ ├── utils/ # 工具类
 │ │ ├── PythonScriptExecutor.java # 构建 SSH 命令
 │ │ ├── SshExecutor.java # SSH 底层执行
-│ │ ├── KafkaSender.java # Kafka 消息发送
-│ │ └── UserContextUtil.java # 获得用户ip和信息
+│ │ ├── KafkaSender.java # Kafka 消息发送(生产者)
+│ │ └── UserContextUtil.java # 获得用户ip和信息(后续配合登录信息用)
 │ │
 │ ├── config/ # 配置类
 │ ├── consumer/ # Kafka 消费者
 │ ├── handler/ # MyBatis-Plus 自动填充
 │ ├── listener/ # EasyExcel 监听器
 │ ├── entity/ # 数据库实体
-│ ├── vo/ # 视图对象（11 个）
-│ └── common/ # 通用响应封装
-│
+│ ├── vo/ # 视图对象│ ├── dto/ # excel数据传入对象
+│ ├── enums/ # 枚举类
+│ │ └── TrendType.java # 目前没什么用但是用了的枚举类，用于判断趋势
+│ ├── common/ # 通用响应封装
+│ └── PlatformApplication.java # 启动类
+│   
 ├── scripts/ # PySpark 脚本目录
 │ ├── main.py # 统一入口（路由分发）
 │ ├── common/ # 公共模块
@@ -88,7 +93,9 @@ platform/
 │ │ ├── emp_rank.py # 员工排名
 │ │ ├── emp_trend.py # 员工趋势（LAG 窗口函数）
 │ │ ├── dept_stats.py # 部门统计
+│ │ ├── dept_avg.py # 部门平均绩效
 │ │ ├── company_summary.py # 公司摘要
+│ │ ├── company_avg.py # 公司平均绩效
 │ │ └── anomaly_detect.py # 异常检测（LAG 窗口函数）
 │ └── logs/ # 运行日志
 │
@@ -209,15 +216,15 @@ Kafka 异步记录操作日志
 
 > 测试环境：员工表 1000+ 条，绩效表 4000+ 条
 
-| 场景 | 耗时 | 说明 |
-| :--- | :--- | :--- |
-| **统计接口（首次调用）** | ~10-11 秒 | PySpark 冷启动 + Spark Session 初始化 |
+| 场景 | 耗时        | 说明 |
+| :--- |:----------| :--- |
+| **统计接口（首次调用）** | ~10-12 秒  | PySpark 冷启动 + Spark Session 初始化 |
 | **统计接口（缓存命中）** | ~20-50 毫秒 | Redis 直接返回，提升 **200-500 倍** |
-| **统计接口（缓存失效后）** | ~9-10 秒 | 需重新初始化 Spark（但比首次略快） |
-| **Excel 导入（1000 员工）** | ~2.8 秒 | EasyExcel 流式 + MyBatis-Plus 批量插入 |
-| **Excel 导入（4000 绩效）** | ~8.1 秒 | 同上 |
-| **普通 CRUD（首次）** | ~100 毫秒 | MyBatis-Plus + MySQL 首次查询 |
-| **普通 CRUD（后续）** | ~8 毫秒 | 数据库连接池 + 热点索引生效 |
+| **统计接口（缓存失效后）** | ~7-10 秒   | 需重新初始化 Spark（但比首次略快） |
+| **Excel 导入（1000 员工）** | ~2.8 秒    | EasyExcel 流式 + MyBatis-Plus 批量插入 |
+| **Excel 导入（4000 绩效）** | ~8.1 秒    | 同上 |
+| **普通 CRUD（首次）** | ~100 毫秒   | MyBatis-Plus + MySQL 首次查询 |
+| **普通 CRUD（后续）** | ~8 毫秒     | 数据库连接池 + 热点索引生效 |
 
 ### 📌 关键发现
 

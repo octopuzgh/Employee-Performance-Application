@@ -72,3 +72,110 @@
 2026-04-18 17:09:49,016 - INFO - 执行统计任务: emp_rank
 2026-04-18 17:09:57,643 - INFO - 统计任务完成: emp_rank
 2026-04-18 17:09:57,644 - INFO - Closing down clientserver connection
+2026-04-19 17:30:46,224 - INFO - 执行统计任务: emp_trend
+2026-04-19 17:30:57,691 - INFO - 统计任务完成: emp_trend
+2026-04-19 17:30:57,692 - INFO - Closing down clientserver connection
+2026-04-19 17:40:45,617 - INFO - 执行统计任务: emp_trend
+2026-04-19 17:40:54,668 - INFO - 统计任务完成: emp_trend
+2026-04-19 17:40:54,669 - INFO - Closing down clientserver connection
+2026-04-19 17:42:25,438 - INFO - 执行统计任务: emp_trend
+2026-04-19 17:42:35,448 - INFO - 统计任务完成: emp_trend
+2026-04-19 17:42:35,449 - INFO - Closing down clientserver connection
+2026-04-19 17:49:31,182 - INFO - 执行统计任务: emp_trend
+2026-04-19 17:49:39,941 - INFO - 统计任务完成: emp_trend
+2026-04-19 17:49:39,941 - INFO - Closing down clientserver connection
+2026-04-20 11:42:13,078 - INFO - 执行统计任务: dept_rank
+2026-04-20 11:42:24,811 - INFO - 统计任务完成: dept_rank
+2026-04-20 11:42:24,812 - INFO - Closing down clientserver connection
+2026-04-20 11:48:19,643 - INFO - 执行统计任务: emp_trend
+2026-04-20 11:48:27,084 - INFO - 统计任务完成: emp_trend
+2026-04-20 11:48:27,085 - INFO - Closing down clientserver connection
+2026-04-20 11:49:49,878 - INFO - 执行统计任务: company_avg
+2026-04-20 11:49:56,504 - INFO - 统计任务完成: company_avg
+2026-04-20 11:49:56,505 - INFO - Closing down clientserver connection
+2026-04-20 11:50:26,746 - INFO - 执行统计任务: company_avg
+2026-04-20 11:50:33,168 - INFO - 统计任务完成: company_avg
+2026-04-20 11:50:33,168 - INFO - Closing down clientserver connection
+2026-04-20 11:56:59,819 - INFO - 执行统计任务: company_avg
+2026-04-20 11:57:06,073 - INFO - 统计任务完成: company_avg
+2026-04-20 11:57:06,074 - INFO - Closing down clientserver connection
+2026-04-20 11:57:27,421 - INFO - 执行统计任务: company_avg
+2026-04-20 11:57:33,821 - INFO - 统计任务完成: company_avg
+2026-04-20 11:57:33,822 - INFO - Closing down clientserver connection
+2026-04-20 11:58:51,737 - INFO - 执行统计任务: dept_rank
+2026-04-20 11:58:59,023 - INFO - 统计任务完成: dept_rank
+2026-04-20 11:58:59,024 - INFO - Closing down clientserver connection
+2026-04-20 11:59:45,332 - INFO - 执行统计任务: dept_rank
+2026-04-20 11:59:52,738 - INFO - 统计任务完成: dept_rank
+2026-04-20 11:59:52,738 - INFO - Closing down clientserver connection
+2026-04-20 12:00:43,248 - INFO - 执行统计任务: company_avg
+2026-04-20 12:00:49,834 - INFO - 统计任务完成: company_avg
+2026-04-20 12:00:49,834 - INFO - Closing down clientserver connection
+2026-04-20 12:01:40,111 - INFO - 执行统计任务: company_summary
+2026-04-20 12:01:49,070 - INFO - 统计任务完成: company_summary
+2026-04-20 12:01:49,071 - INFO - Closing down clientserver connection
+2026-04-20 12:02:02,999 - INFO - 执行统计任务: company_summary
+2026-04-20 12:02:13,486 - INFO - 统计任务完成: company_summary
+2026-04-20 12:02:13,487 - INFO - Closing down clientserver connection
+2026-04-20 12:02:25,969 - INFO - 执行统计任务: company_summary
+2026-04-20 12:02:34,488 - INFO - 统计任务完成: company_summary
+2026-04-20 12:02:34,488 - INFO - Closing down clientserver connection
+2026-04-20 12:04:12,146 - INFO - 执行统计任务: company_summary
+2026-04-20 12:04:21,046 - INFO - 统计任务完成: company_summary
+2026-04-20 12:04:21,047 - INFO - Closing down clientserver connection
+2026-04-20 12:04:53,901 - INFO - 执行统计任务: company_summary
+2026-04-20 12:05:03,000 - INFO - 统计任务完成: company_summary
+2026-04-20 12:05:03,000 - INFO - Closing down clientserver connection
+2026-04-20 12:05:35,670 - INFO - 执行统计任务: company_summary
+2026-04-20 12:05:44,246 - INFO - 统计任务完成: company_summary
+2026-04-20 12:05:44,247 - INFO - Closing down clientserver connection
+2026-04-20 12:08:22,945 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:08:32,740 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:08:32,741 - INFO - Closing down clientserver connection
+2026-04-20 12:08:51,028 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:08:58,438 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:08:58,439 - INFO - Closing down clientserver connection
+2026-04-20 12:14:14,860 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:14:24,127 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:14:24,128 - INFO - Closing down clientserver connection
+2026-04-20 12:15:35,072 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:15:42,757 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:15:42,758 - INFO - Closing down clientserver connection
+2026-04-20 12:17:30,492 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:17:40,182 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:17:40,183 - INFO - Closing down clientserver connection
+2026-04-20 12:19:39,898 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:19:49,410 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:19:49,411 - INFO - Closing down clientserver connection
+2026-04-20 12:21:41,341 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:21:49,869 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:21:49,869 - INFO - Closing down clientserver connection
+2026-04-20 12:25:23,842 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:25:23,855 - ERROR - 统计任务失败: dept_stats, 错误: No module named 'sympy'
+2026-04-20 12:26:49,595 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:27:27,727 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:27:27,728 - INFO - Closing down clientserver connection
+2026-04-20 12:28:43,350 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:29:21,069 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:29:21,070 - INFO - Closing down clientserver connection
+2026-04-20 12:29:55,175 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:30:36,830 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:30:36,833 - INFO - Closing down clientserver connection
+2026-04-20 12:34:35,281 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:35:15,019 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:35:15,020 - INFO - Closing down clientserver connection
+2026-04-20 12:35:56,154 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:36:35,232 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:36:35,233 - INFO - Closing down clientserver connection
+2026-04-20 12:38:22,786 - INFO - 执行统计任务: dept_stats
+2026-04-20 12:38:30,505 - INFO - 统计任务完成: dept_stats
+2026-04-20 12:38:30,506 - INFO - Closing down clientserver connection
+2026-04-20 19:31:22,703 - INFO - 执行统计任务: dept_stats
+2026-04-20 19:31:38,139 - INFO - 统计任务完成: dept_stats
+2026-04-20 19:31:38,141 - INFO - Closing down clientserver connection
+2026-04-20 19:40:34,763 - INFO - 执行统计任务: dept_stats
+2026-04-20 19:40:43,978 - INFO - 统计任务完成: dept_stats
+2026-04-20 19:40:43,980 - INFO - Closing down clientserver connection
+2026-04-20 19:40:52,750 - INFO - 执行统计任务: dept_stats
+2026-04-20 19:41:00,300 - INFO - 统计任务完成: dept_stats
+2026-04-20 19:41:00,301 - INFO - Closing down clientserver connection

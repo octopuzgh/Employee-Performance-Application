@@ -4,14 +4,14 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://192.168.152.131:3306/employee_performance?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&allowPublicKeyRetrieval=true
     username: octopuz_remote
-    password: Octopuz@123
+    password: ${MYSQL_PASSWORD}
   #redis
   data:
     redis:
       host: 192.168.152.131
       port: 6379
       username: octopuz_remote
-      password: Octopuz@123
+      password: ${REDIS_PASSWORD}
       database: 0
       timeout: 3000ms
       lettuce:

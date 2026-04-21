@@ -29,9 +29,7 @@ public class EmployeeTrendVO {
     @JSONField(name = "growth_rate")
     private BigDecimal growthRate;
     //趋势标识
-    private TrendType trend;
-    public String getTrend() {
-        return trend != null ? trend.getMessage() : null;
-    }
+    private String trend;
+
 
 }

@@ -200,7 +200,8 @@ public class AnalysisServiceImpl extends ServiceImpl<PerformanceMapper, Performa
 
             // 计算 trend 字段
             for (EmployeeTrendVO et : trends) {
-                et.setTrend(TrendType.fromGrowthRate(et.getGrowthRate()));
+                TrendType trendType = TrendType.fromGrowthRate(et.getGrowthRate());
+                et.setTrend(trendType != null ? trendType.getMessage() : null);
             }
 
             return trends;
